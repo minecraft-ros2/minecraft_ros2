@@ -1,1 +1,1 @@
-gradlew runClient --stacktrace
+./gradlew runClient --stacktrace
