@@ -44,7 +44,7 @@ authors="${mod_authors}" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''ROS2と連携します
 作者: Kazusa Hashimoto
-パッケージ名: com.kazu-321.ros2mc
+パッケージ名: com.kazusa.ros2mc
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.ros2mc]] #optional
@@ -53,7 +53,7 @@ description='''ROS2と連携します
     # Does this dependency have to exist - if not, ordering below must be specified
     mandatory=true #mandatory
     # The version range of the dependency
-    versionRange="[*]" #mandatory
+    versionRange="[50.1.0]" #mandatory
     # An ordering relationship for the dependency - BEFORE or AFTER required if the dependency is not mandatory
     # BEFORE - This mod is loaded BEFORE the dependency
     # AFTER - This mod is loaded AFTER the dependency

@@ -114,9 +114,9 @@ repositories {
 
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
-    // flatDir {
-    //     dir 'libs'
-    // }
+    flatDir {
+        dir 'libs'
+    }
 }
 
 dependencies {
@@ -126,6 +126,21 @@ dependencies {
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    // ROS 2 Java dependencies
+    implementation files('libs/rcljava.jar')
+    implementation files('libs/rcljava_common.jar')
+    implementation files('libs/geometry_msgs_messages.jar')
+    implementation files('libs/std_msgs_messages.jar')
+    implementation files('libs/builtin_interfaces_messages.jar')
+    // implementation files('libs/slf4j-api-1.7.21.jar')
+    // implementation files('libs/slf4j-jdk14-1.7.21.jar')
+    // implementation files('libs/commons-lang3-3.7.jar')
+
+    // Exclude org.slf4j.simple from all dependencies
+    // configurations.all {
+    //     exclude group: 'org.slf4j', module: 'slf4j-simple'
+    // }
 
     // Example mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
