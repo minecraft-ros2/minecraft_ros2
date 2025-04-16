@@ -13,25 +13,29 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
+
+
 @Mod(Ros2mc.MOD_ID)
 public class Ros2mc {
     public static final String MOD_ID = "ros2mc";
     private static final Logger LOGGER = LoggerFactory.getLogger(Ros2mc.class);
 
-    public Ros2mc() {
+    public Ros2mc() throws NoSuchFieldException, IllegalAccessException {
         LOGGER.info("Initializing ROS2MC mod");
-        
+
         // Register the setup methods for mod loading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-        
+
         // Register the configuration
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onConfigLoad);
-        
+
         // Register this mod to the MinecraftForge event bus
         MinecraftForge.EVENT_BUS.register(this);
-        
+
         LOGGER.info("ROS2MC mod initialized");
     }
 
@@ -40,9 +44,11 @@ public class Ros2mc {
         // Performed for both client and server setup
     }
 
+
+
     private void clientSetup(final FMLClientSetupEvent event) {
         LOGGER.info("ROS2MC client setup");
-        
+
         // Initialize ROS2 system on a separate thread to prevent blocking the main thread
         event.enqueueWork(() -> {
             try {

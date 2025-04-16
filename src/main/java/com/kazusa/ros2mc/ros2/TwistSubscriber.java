@@ -15,12 +15,14 @@ public class TwistSubscriber extends BaseComposableNode {
     private Subscription<Twist> subscription;
     private double lastLinearX = 0.0;
     private double lastLinearY = 0.0;
+    private double lastLinearZ = 0.0;
+    private double lastAngularY = 0.0;
     private double lastAngularZ = 0.0;
 
     public TwistSubscriber() {
-        super("minecraft_subscriber");
+        super("minecraft_twist_subscriber");
         subscription = this.node.<Twist>createSubscription(
-            Twist.class, "cmd_vel", this::twistCallback);
+            Twist.class, "/cmd_vel", this::twistCallback);
         LOGGER.info("TwistSubscriber initialized and listening on 'cmd_vel' topic");
     }
 
@@ -28,10 +30,12 @@ public class TwistSubscriber extends BaseComposableNode {
         // Store the received twist values
         lastLinearX = msg.getLinear().getX();
         lastLinearY = msg.getLinear().getY();
+        lastLinearZ = msg.getLinear().getZ();
+        lastAngularY = msg.getAngular().getY();
         lastAngularZ = msg.getAngular().getZ();
         
-        LOGGER.debug("Received twist: linear_x={}, linear_y={}, angular_z={}", 
-                lastLinearX, lastLinearY, lastAngularZ);
+        LOGGER.debug("Received twist: linear_x={}, linear_y={}, linear_z={}, angular_y={}, angular_z={}", 
+                lastLinearX, lastLinearY, lastLinearZ, lastAngularY, lastAngularZ);
     }
     
     /**
@@ -48,12 +52,13 @@ public class TwistSubscriber extends BaseComposableNode {
             double speedFactor = maxSpeed / 20.0; // Convert to blocks per tick
             
             // Apply linear movement (forward/backward and strafe)
-            if (Math.abs(lastLinearX) > 0.1 || Math.abs(lastLinearY) > 0.1) {
+            if (Math.abs(lastLinearX) > 0.1 || Math.abs(lastLinearY) > 0.1 || Math.abs(lastLinearZ) > 0.1) {
                 // Convert ROS coordinate system to Minecraft
                 // In ROS, X is forward, Y is left, Z is up
                 // Apply the movement directly to the player's motion
                 double forwardMovement = lastLinearX * speedFactor;
                 double sidewaysMovement = -lastLinearY * speedFactor; // Negative because ROS Y is left
+                double verticalMovement = lastLinearZ > 0.1 ? 1.0 : 0.0; // Jump if linear_z > 0.1
                 
                 // Get player's current look direction for movement relative to where they're facing
                 float yaw = player.getYRot();
@@ -64,14 +69,16 @@ public class TwistSubscriber extends BaseComposableNode {
                 double movZ = Math.cos(yawRadians) * forwardMovement - Math.sin(yawRadians) * sidewaysMovement;
                 
                 // Set the player's position
-                player.setPos(player.getX() + movX, player.getY(), player.getZ() + movZ);
+                player.setPos(player.getX() + movX, player.getY() + verticalMovement, player.getZ() + movZ);
             }
             
             // Apply rotation (angular movement)
-            if (Math.abs(lastAngularZ) > 0.1) {
+            if (Math.abs(lastAngularZ) > 0.1 || Math.abs(lastAngularY) > 0.1) {
                 // Rotate the player (negative because ROS angular Z is counterclockwise)
-                float rotationAmount = (float)(-lastAngularZ * speedFactor * 10); // Adjust sensitivity
-                player.setYRot(player.getYRot() + rotationAmount);
+                float rotationAmountZ = (float)(-lastAngularZ * speedFactor * 10); // Adjust sensitivity
+                float rotationAmountY = (float)(lastAngularY * speedFactor * 10); // Adjust sensitivity for vertical look
+                player.setYRot(player.getYRot() + rotationAmountZ);
+                player.setXRot(player.getXRot() + rotationAmountY);
             }
         }
     }

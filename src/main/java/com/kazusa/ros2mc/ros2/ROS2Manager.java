@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.lang.reflect.Field;
+import java.util.Arrays;
 
 /**
  * Manages ROS2 initialization, execution, and shutdown
@@ -44,6 +46,8 @@ public class ROS2Manager {
         if (!initialized.getAndSet(true)) {
             try {
                 LOGGER.info("Initializing ROS2...");
+
+
                 RCLJava.rclJavaInit();
                 
                 // Create subscriber
@@ -119,4 +123,5 @@ public class ROS2Manager {
     public boolean isInitialized() {
         return initialized.get();
     }
+
 }
