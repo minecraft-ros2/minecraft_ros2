@@ -20,6 +20,7 @@ public class ROS2Manager {
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private ExecutorService executorService;
     private TwistSubscriber twistSubscriber;
+    private ImagePublisher imagePublisher;
     
     private ROS2Manager() {
         // Private constructor for singleton
@@ -52,6 +53,7 @@ public class ROS2Manager {
                 
                 // Create subscriber
                 twistSubscriber = new TwistSubscriber();
+                imagePublisher = new ImagePublisher();
                 
                 // Create and start executor thread for ROS2 spin
                 executorService = Executors.newSingleThreadExecutor(r -> {
@@ -65,6 +67,8 @@ public class ROS2Manager {
                     try {
                         while (!Thread.currentThread().isInterrupted() && RCLJava.ok()) {
                             RCLJava.spinSome(twistSubscriber);
+                            RCLJava.spinSome(imagePublisher);
+                            //captureAndPublishImage
                             Thread.sleep(10); // Don't hog CPU
                         }
                     } catch (InterruptedException e) {
