@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.ros2.rcljava.node.BaseComposableNode;
 import org.ros2.rcljava.publisher.Publisher;
 import sensor_msgs.msg.Image;
+import org.ros2.rcljava.Time;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 
@@ -54,6 +55,8 @@ public class ImagePublisher extends BaseComposableNode {
 
             // ROS2 Imageメッセージ作成
             Image rosImage = new Image();
+            rosImage.getHeader().setFrameId("player");
+            rosImage.getHeader().setStamp(Time.now());
             rosImage.setWidth(scaledWidth);
             rosImage.setHeight(scaledHeight);
             rosImage.setEncoding("rgb8");
