@@ -21,6 +21,7 @@ public class ROS2Manager {
     private ExecutorService executorService;
     private TwistSubscriber twistSubscriber;
     private ImagePublisher imagePublisher;
+    private PointCloudPublisher pointCloudPublisher;
     
     private ROS2Manager() {
         // Private constructor for singleton
@@ -59,6 +60,7 @@ public class ROS2Manager {
                 // Create subscriber
                 twistSubscriber = new TwistSubscriber();
                 imagePublisher = new ImagePublisher();
+                pointCloudPublisher = new PointCloudPublisher();
                 
                 // Create and start executor thread for ROS2 spin
                 executorService = Executors.newSingleThreadExecutor(r -> {
@@ -73,6 +75,7 @@ public class ROS2Manager {
                         while (!Thread.currentThread().isInterrupted() && RCLJava.ok()) {
                             RCLJava.spinSome(twistSubscriber);
                             RCLJava.spinSome(imagePublisher);
+                            RCLJava.spinSome(pointCloudPublisher);
                             //captureAndPublishImage
                             Thread.sleep(10); // Don't hog CPU
                         }
