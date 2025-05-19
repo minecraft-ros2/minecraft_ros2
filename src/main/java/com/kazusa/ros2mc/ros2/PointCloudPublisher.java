@@ -3,6 +3,7 @@ package com.kazusa.ros2mc.ros2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.ros2.rcljava.Time;
 import org.ros2.rcljava.node.BaseComposableNode;
 import org.ros2.rcljava.publisher.Publisher;
@@ -44,20 +45,18 @@ public class PointCloudPublisher extends BaseComposableNode {
         double yawRadPlayer = Math.toRadians(-minecraft.player.getYRot());
         double pitchRadPlayer = 0.0;
 
-        // -30° ～ +30° を 1°刻みでスキャン（61本）
-        int verticalSteps = 80;
-        double verticalStartDeg = -40;
-        double verticalEndDeg = 40;
+        int verticalSteps = 135;
+        double verticalStartDeg = -90;
+        double verticalEndDeg = 45;
 
-        // 1°刻みでラジアンに変換したリストを作成
         List<Double> verticalAnglesRad = new ArrayList<>();
-        for (int i = 0; i < verticalSteps; i++) {
+        for (int i = 0; i < verticalSteps; i += 2) {
             double deg = verticalStartDeg + i;
             verticalAnglesRad.add(Math.toRadians(deg));
         }
 
-        int horizontalSteps = 360; // 1度刻み
-        double maxDistance = 5.0;
+        int horizontalSteps = 180;
+        double maxDistance = 10.0;
         List<Float> points = new ArrayList<>();
 
         for (double pitch : verticalAnglesRad) {
@@ -67,6 +66,8 @@ public class PointCloudPublisher extends BaseComposableNode {
                 double dx = Math.cos(pitch) * Math.sin(yaw);
                 double dy = Math.sin(pitch);
                 double dz = Math.cos(pitch) * Math.cos(yaw);
+
+                // BlockState prevState = null;
 
                 for (double dist = 0.01; dist <= maxDistance; dist += 0.01) {
                     double tx = px + dx * dist;
@@ -79,13 +80,15 @@ public class PointCloudPublisher extends BaseComposableNode {
                         (int) Math.floor(tz)
                     );
 
-                    BlockState state = minecraft.level.getBlockState(pos);
-                    if (!state.isAir()) {
+                    BlockState currState = minecraft.level.getBlockState(pos);
+                    boolean isSurfaceBlock = !currState.isAir() &&
+                        currState.getCollisionShape(minecraft.level, pos).isEmpty() == false;
+
+                    if (isSurfaceBlock) {
                         double rx = tx - px;
                         double ry = ty - py;
                         double rz = tz - pz;
 
-                        // プレイヤーYaw回転のみ反映
                         double cosPitch = Math.cos(pitchRadPlayer);
                         double sinPitch = Math.sin(pitchRadPlayer);
                         double ryPitch = ry * cosPitch - rz * sinPitch;
@@ -96,7 +99,6 @@ public class PointCloudPublisher extends BaseComposableNode {
                         double rxYaw = rx * cosYaw + rzPitch * sinYaw;
                         double rzYaw = -rx * sinYaw + rzPitch * cosYaw;
 
-                        // Minecraft → ROS 座標変換
                         float x_ros = (float) (-rzYaw);
                         float y_ros = (float) (rxYaw);
                         float z_ros = (float) (ryPitch);
@@ -104,8 +106,10 @@ public class PointCloudPublisher extends BaseComposableNode {
                         points.add(x_ros);
                         points.add(y_ros);
                         points.add(z_ros);
-                        break; // 最初のヒット点のみ取得
+                        break;
                     }
+
+                    // prevState = currState;
                 }
             }
         }
@@ -140,7 +144,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         msg.setData(buffer.array());
 
         publisher.publish(msg);
-        LOGGER.info("Published 61-layer 3D pointcloud with {} points", pointCount);
+        LOGGER.info("Published improved pointcloud with {} points", pointCount);
     }
 
     private PointField createPointField(String name, int offset) {
