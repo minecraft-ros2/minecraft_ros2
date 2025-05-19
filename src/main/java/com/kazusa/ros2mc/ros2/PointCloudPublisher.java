@@ -38,16 +38,16 @@ public class PointCloudPublisher extends BaseComposableNode {
         if (minecraft.player == null || minecraft.level == null) return;
 
         double px = minecraft.player.getX();
-        double py = minecraft.player.getY();
+        double py = minecraft.player.getY() + minecraft.player.getEyeHeight();
         double pz = minecraft.player.getZ();
 
         double yawRadPlayer = Math.toRadians(-minecraft.player.getYRot());
         double pitchRadPlayer = 0.0;
 
         // -30° ～ +30° を 1°刻みでスキャン（61本）
-        int verticalSteps = 90;
-        double verticalStartDeg = -45;
-        double verticalEndDeg = 45;
+        int verticalSteps = 80;
+        double verticalStartDeg = -40;
+        double verticalEndDeg = 40;
 
         // 1°刻みでラジアンに変換したリストを作成
         List<Double> verticalAnglesRad = new ArrayList<>();
@@ -57,7 +57,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         }
 
         int horizontalSteps = 360; // 1度刻み
-        double maxDistance = 10.0;
+        double maxDistance = 5.0;
         List<Float> points = new ArrayList<>();
 
         for (double pitch : verticalAnglesRad) {
@@ -68,7 +68,7 @@ public class PointCloudPublisher extends BaseComposableNode {
                 double dy = Math.sin(pitch);
                 double dz = Math.cos(pitch) * Math.cos(yaw);
 
-                for (double dist = 0.1; dist <= maxDistance; dist += 0.1) {
+                for (double dist = 0.01; dist <= maxDistance; dist += 0.01) {
                     double tx = px + dx * dist;
                     double ty = py + dy * dist;
                     double tz = pz + dz * dist;
