@@ -70,10 +70,7 @@ dependencies {
     implementation files('libs/std_msgs_messages.jar')
     implementation files('libs/builtin_interfaces_messages.jar')
     implementation files('libs/sensor_msgs_messages.jar')
-
-    // // 必要に応じたSLF4Jの設定
-    // implementation 'org.slf4j:slf4j-api:1.7.21'
-    // runtimeOnly 'org.slf4j:slf4j-jdk14:1.7.21'
+    implementation files('libs/tf2_msgs_messages.jar')
 
     // 互換性のための設定
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') {
