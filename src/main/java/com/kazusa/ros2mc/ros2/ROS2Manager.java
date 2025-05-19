@@ -25,6 +25,11 @@ public class ROS2Manager {
     private ROS2Manager() {
         // Private constructor for singleton
     }
+
+    public ImagePublisher getImagePublisher() {
+        return imagePublisher;
+    }
+
     
     /**
      * Get the singleton instance of the ROS2Manager

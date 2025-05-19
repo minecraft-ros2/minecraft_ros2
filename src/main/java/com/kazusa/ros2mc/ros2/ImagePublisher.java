@@ -3,73 +3,68 @@ package com.kazusa.ros2mc.ros2;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
-import org.ros2.rcljava.node.BaseComposableNode;
-import org.ros2.rcljava.publisher.Publisher;
-import org.ros2.rcljava.timer.WallTimer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.concurrent.TimeUnit;
+import org.ros2.rcljava.node.BaseComposableNode;
+import org.ros2.rcljava.publisher.Publisher;
 import sensor_msgs.msg.Image;
-
 import java.nio.ByteBuffer;
+import java.util.concurrent.CompletableFuture;
 
 public class ImagePublisher extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(ImagePublisher.class);
+
     private final Publisher<Image> publisher;
-    private final WallTimer timer;
     private final Minecraft minecraft;
 
     public ImagePublisher() {
         super("minecraft_image_publisher");
         publisher = this.node.createPublisher(Image.class, "/player/image_raw");
         minecraft = Minecraft.getInstance();
-        timer = this.node.createWallTimer(1000, TimeUnit.MILLISECONDS, this::publishPlayerViewImage);
-        LOGGER.info("ImagePublisher initialized and publishing to 'player/image_raw' topic");
+        LOGGER.info("ImagePublisher initialized and publishing to '/player/image_raw'");
     }
 
-    public void publishPlayerViewImage() {
+    public void captureAndPublish() {
         try {
-            minecraft.execute(() -> {
-                try {
-                    int width = minecraft.getMainRenderTarget().width;
-                    int height = minecraft.getMainRenderTarget().height;
+            int width = minecraft.getMainRenderTarget().width;
+            int height = minecraft.getMainRenderTarget().height;
 
-                    ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
-                    GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+            int scale = 3;
+            int scaledWidth = width / scale;
+            int scaledHeight = height / scale;
 
-                    byte[] pixelData = new byte[buffer.remaining()];
-                    buffer.get(pixelData);
+            // 画面全体のRGBAピクセルを取得
+            ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
+            GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
 
-                    // Convert RGBA to RGB by removing the alpha channel
-                    byte[] rgbData = new byte[width * height * 3];
+            // RGBAからRGBに変換しつつ縮小
+            byte[] rgbData = new byte[scaledWidth * scaledHeight * 3];
+            for (int y = 0; y < scaledHeight; y++) {
+                for (int x = 0; x < scaledWidth; x++) {
+                    int srcX = x * scale;
+                    int srcY = y * scale;
+                    int srcIndex = ((height - 1 - srcY) * width + srcX) * 4;
+                    int dstIndex = (y * scaledWidth + x) * 3;
 
-                    // Flip the image vertically
-                    for (int y = 0; y < height; y++) {
-                        for (int x = 0; x < width; x++) {
-                            int srcIndex = ((height - 1 - y) * width + x) * 4; // Source index in RGBA buffer
-                            int dstIndex = (y * width + x) * 3; // Destination index in RGB buffer
-
-                            rgbData[dstIndex] = pixelData[srcIndex];       // Red
-                            rgbData[dstIndex + 1] = pixelData[srcIndex + 1]; // Green
-                            rgbData[dstIndex + 2] = pixelData[srcIndex + 2]; // Blue
-                        }
-                    }
-
-                    Image rosImage = new Image();
-                    rosImage.setWidth(width);
-                    rosImage.setHeight(height);
-                    rosImage.setEncoding("rgb8");
-                    rosImage.setData(rgbData);
-                    rosImage.setStep(width * 3); // Step size in bytes (3 bytes per pixel for RGB)
-
-                    publisher.publish(rosImage);
-                    LOGGER.info("Image published");
-                } catch (Exception e) {
-                    LOGGER.error("Failed to publish image", e);
+                    rgbData[dstIndex] = buffer.get(srcIndex);         // R
+                    rgbData[dstIndex + 1] = buffer.get(srcIndex + 1); // G
+                    rgbData[dstIndex + 2] = buffer.get(srcIndex + 2); // B
                 }
-            });
+            }
+
+            // ROS2 Imageメッセージ作成
+            Image rosImage = new Image();
+            rosImage.setWidth(scaledWidth);
+            rosImage.setHeight(scaledHeight);
+            rosImage.setEncoding("rgb8");
+            rosImage.setStep(scaledWidth * 3);
+            rosImage.setData(rgbData);
+
+            // 非同期で送信（メインスレッドの負荷軽減）
+            CompletableFuture.runAsync(() -> publisher.publish(rosImage));
+
         } catch (Exception e) {
-            LOGGER.error("Failed to publish image", e);
+            LOGGER.error("Failed to capture and publish image", e);
         }
     }
 }
