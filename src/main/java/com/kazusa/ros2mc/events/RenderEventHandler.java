@@ -8,14 +8,21 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber
 public class RenderEventHandler {
+    private static int renderTickCount = 0;
+
     @SubscribeEvent
     public static void onRenderTick(TickEvent.RenderTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            ROS2Manager ros2 = ROS2Manager.getInstance();
-            if (ros2.isInitialized()) {
-                ImagePublisher publisher = ros2.getImagePublisher();
-                if (publisher != null) {
-                    publisher.captureAndPublish(); // 描画直後に画像取得
+            renderTickCount++;
+            if (renderTickCount==3) {
+                renderTickCount = 0; // Reset the counter
+
+                ROS2Manager ros2 = ROS2Manager.getInstance();
+                if (ros2.isInitialized()) {
+                    ImagePublisher publisher = ros2.getImagePublisher();
+                    if (publisher != null) {
+                        publisher.captureAndPublish(); // 3回に1回画像取得
+                    }
                 }
             }
         }

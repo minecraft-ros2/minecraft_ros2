@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import sensor_msgs.msg.PointCloud2;
 import sensor_msgs.msg.PointField;
 import std_msgs.msg.Header;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -42,49 +44,63 @@ public class PointCloudPublisher extends BaseComposableNode {
         double py = minecraft.player.getY() + minecraft.player.getEyeHeight();
         double pz = minecraft.player.getZ();
 
-        double yawRadPlayer = Math.toRadians(-minecraft.player.getYRot());
+        double yawRadPlayer = Math.toRadians(minecraft.player.getYRot());
         double pitchRadPlayer = 0.0;
-
-        int verticalSteps = 135;
-        double verticalStartDeg = -90;
-        double verticalEndDeg = 45;
-
-        List<Double> verticalAnglesRad = new ArrayList<>();
-        for (int i = 0; i < verticalSteps; i += 2) {
-            double deg = verticalStartDeg + i;
-            verticalAnglesRad.add(Math.toRadians(deg));
-        }
-
-        int horizontalSteps = 180;
-        double maxDistance = 10.0;
+        int verticalSteps = 90;
+        int horizontalSteps = 90;
+        double maxDistance = 15.0;
         List<Float> points = new ArrayList<>();
 
-        for (double pitch : verticalAnglesRad) {
+        List<Entity> entities = minecraft.level.getEntities(
+            minecraft.player,
+            new AABB(px - maxDistance, py - maxDistance, pz - maxDistance,
+                     px + maxDistance, py + maxDistance, pz + maxDistance),
+            entity -> !entity.is(minecraft.player)
+        );
+
+        for (int d = 0; d < verticalSteps; d++) {
             for (int h = 0; h < horizontalSteps; h++) {
+                double pitch = Math.PI * ((double) d / verticalSteps - 0.5);
                 double yaw = 2 * Math.PI * h / horizontalSteps;
 
                 double dx = Math.cos(pitch) * Math.sin(yaw);
                 double dy = Math.sin(pitch);
                 double dz = Math.cos(pitch) * Math.cos(yaw);
 
-                // BlockState prevState = null;
-
-                for (double dist = 0.01; dist <= maxDistance; dist += 0.01) {
+                for (double dist = 0.0; dist <= maxDistance; dist += 0.02) {
                     double tx = px + dx * dist;
                     double ty = py + dy * dist;
                     double tz = pz + dz * dist;
 
-                    BlockPos pos = new BlockPos(
-                        (int) Math.floor(tx),
-                        (int) Math.floor(ty),
-                        (int) Math.floor(tz)
-                    );
+                    BlockPos blockPos = new BlockPos((int) Math.floor(tx), (int) Math.floor(ty), (int) Math.floor(tz));
+                    BlockState blockState = minecraft.level.getBlockState(blockPos);
+                    VoxelShape shape = blockState.getCollisionShape(minecraft.level, blockPos);
+                    boolean isBlockHit = false;
 
-                    BlockState currState = minecraft.level.getBlockState(pos);
-                    boolean isSurfaceBlock = !currState.isAir() &&
-                        currState.getCollisionShape(minecraft.level, pos).isEmpty() == false;
+                    String blockName = blockState.getBlock().toString().toLowerCase();
+                    if (blockName.contains("glass")) {
+                        continue; // Skip transparent blocks
+                    }
 
-                    if (isSurfaceBlock) {
+                    if (!shape.isEmpty()) {
+                        for (AABB aabb : shape.toAabbs()) {
+                            AABB worldAabb = aabb.move(blockPos);
+                            if (worldAabb.contains(tx, ty, tz)) {
+                                isBlockHit = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    boolean isEntityHit = false;
+                    for (Entity entity : entities) {
+                        if (entity.getBoundingBox().contains(tx, ty, tz)) {
+                            isEntityHit = true;
+                            break;
+                        }
+                    }
+
+                    if (isBlockHit || isEntityHit) {
                         double rx = tx - px;
                         double ry = ty - py;
                         double rz = tz - pz;
@@ -99,17 +115,15 @@ public class PointCloudPublisher extends BaseComposableNode {
                         double rxYaw = rx * cosYaw + rzPitch * sinYaw;
                         double rzYaw = -rx * sinYaw + rzPitch * cosYaw;
 
-                        float x_ros = (float) (-rzYaw);
-                        float y_ros = (float) (rxYaw);
-                        float z_ros = (float) (ryPitch);
+                        float x_ros = (float) rzYaw;
+                        float y_ros = (float) rxYaw;
+                        float z_ros = (float) ryPitch;
 
                         points.add(x_ros);
                         points.add(y_ros);
                         points.add(z_ros);
-                        break;
+                        break; // Ray hit something
                     }
-
-                    // prevState = currState;
                 }
             }
         }
@@ -144,7 +158,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         msg.setData(buffer.array());
 
         publisher.publish(msg);
-        LOGGER.info("Published improved pointcloud with {} points", pointCount);
+        // LOGGER.info("Published improved pointcloud with {} points", pointCount);
     }
 
     private PointField createPointField(String name, int offset) {

@@ -77,7 +77,7 @@ public class ROS2Manager {
                             RCLJava.spinSome(imagePublisher);
                             RCLJava.spinSome(pointCloudPublisher);
                             //captureAndPublishImage
-                            Thread.sleep(10); // Don't hog CPU
+                            Thread.sleep(5); // Don't hog CPU
                         }
                     } catch (InterruptedException e) {
                         LOGGER.info("ROS2 spin thread interrupted");

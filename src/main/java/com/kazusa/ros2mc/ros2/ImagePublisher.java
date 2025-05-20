@@ -30,7 +30,9 @@ public class ImagePublisher extends BaseComposableNode {
             int width = minecraft.getMainRenderTarget().width;
             int height = minecraft.getMainRenderTarget().height;
 
-            int scale = 3;
+            // 100x200くらいになるように調整
+
+            int scale = 2;
             int scaledWidth = width / scale;
             int scaledHeight = height / scale;
 
