@@ -21,6 +21,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 
 public class PointCloudPublisher extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(PointCloudPublisher.class);
@@ -33,132 +34,134 @@ public class PointCloudPublisher extends BaseComposableNode {
         super("minecraft_pointcloud_publisher");
         publisher = this.node.createPublisher(PointCloud2.class, "/player/pointcloud");
         minecraft = Minecraft.getInstance();
-        timer = this.node.createWallTimer(200, TimeUnit.MILLISECONDS, this::publishLidarScan);
+        timer = this.node.createWallTimer(100, TimeUnit.MILLISECONDS, this::publishAsyncLidarScan);
         LOGGER.info("PointCloudPublisher initialized and publishing to '/player/pointcloud'");
     }
 
-    private void publishLidarScan() {
+    private void publishAsyncLidarScan() {
         if (minecraft.player == null || minecraft.level == null) return;
 
+        // プレイヤー状態をキャプチャしておく（非同期用）
         double px = minecraft.player.getX();
         double py = minecraft.player.getY() + minecraft.player.getEyeHeight();
         double pz = minecraft.player.getZ();
-
         double yawRadPlayer = Math.toRadians(minecraft.player.getYRot());
         double pitchRadPlayer = 0.0;
-        int verticalSteps = 90;
-        int horizontalSteps = 90;
-        double maxDistance = 15.0;
-        List<Float> points = new ArrayList<>();
 
-        List<Entity> entities = minecraft.level.getEntities(
-            minecraft.player,
-            new AABB(px - maxDistance, py - maxDistance, pz - maxDistance,
-                     px + maxDistance, py + maxDistance, pz + maxDistance),
-            entity -> !entity.is(minecraft.player)
-        );
+        var level = minecraft.level;
+        var player = minecraft.player;
 
-        for (int d = 0; d < verticalSteps; d++) {
-            for (int h = 0; h < horizontalSteps; h++) {
-                double pitch = Math.PI * ((double) d / verticalSteps - 0.5);
-                double yaw = 2 * Math.PI * h / horizontalSteps;
+        CompletableFuture.runAsync(() -> {
+            int verticalSteps = 90;
+            int horizontalSteps = 90;
+            double maxDistance = 10.0;
+            double stepSize = 0.05;
+            List<Float> points = new ArrayList<>();
 
-                double dx = Math.cos(pitch) * Math.sin(yaw);
-                double dy = Math.sin(pitch);
-                double dz = Math.cos(pitch) * Math.cos(yaw);
+            List<Entity> entities = level.getEntities(
+                    player,
+                    new AABB(px - maxDistance, py - maxDistance, pz - maxDistance,
+                            px + maxDistance, py + maxDistance, pz + maxDistance),
+                    entity -> !entity.is(player)
+            );
 
-                for (double dist = 0.0; dist <= maxDistance; dist += 0.02) {
-                    double tx = px + dx * dist;
-                    double ty = py + dy * dist;
-                    double tz = pz + dz * dist;
+            for (int d = 0; d < verticalSteps; d++) {
+                for (int h = 0; h < horizontalSteps; h++) {
+                    double pitch = Math.PI * ((double) d / verticalSteps - 0.5);
+                    double yaw = 2 * Math.PI * h / horizontalSteps;
 
-                    BlockPos blockPos = new BlockPos((int) Math.floor(tx), (int) Math.floor(ty), (int) Math.floor(tz));
-                    BlockState blockState = minecraft.level.getBlockState(blockPos);
-                    VoxelShape shape = blockState.getCollisionShape(minecraft.level, blockPos);
-                    boolean isBlockHit = false;
+                    double dx = Math.cos(pitch) * Math.sin(yaw);
+                    double dy = Math.sin(pitch);
+                    double dz = Math.cos(pitch) * Math.cos(yaw);
 
-                    String blockName = blockState.getBlock().toString().toLowerCase();
-                    if (blockName.contains("glass")) {
-                        continue; // Skip transparent blocks
-                    }
+                    for (double dist = 0.0; dist <= maxDistance; dist += stepSize) {
+                        double tx = px + dx * dist;
+                        double ty = py + dy * dist;
+                        double tz = pz + dz * dist;
 
-                    if (!shape.isEmpty()) {
-                        for (AABB aabb : shape.toAabbs()) {
-                            AABB worldAabb = aabb.move(blockPos);
-                            if (worldAabb.contains(tx, ty, tz)) {
+                        BlockPos blockPos = new BlockPos((int) Math.floor(tx), (int) Math.floor(ty), (int) Math.floor(tz));
+                        BlockState blockState = level.getBlockState(blockPos);
+                        String blockName = blockState.getBlock().toString().toLowerCase();
+                        if (blockName.contains("glass")) continue;
+
+                        VoxelShape shape = blockState.getCollisionShape(level, blockPos);
+                        boolean isBlockHit = false;
+                        if (!shape.isEmpty()) {
+                            AABB aabb = shape.bounds().move(blockPos);
+                            if (aabb.contains(tx, ty, tz)) {
                                 isBlockHit = true;
-                                break;
                             }
                         }
-                    }
 
-                    boolean isEntityHit = false;
-                    for (Entity entity : entities) {
-                        if (entity.getBoundingBox().contains(tx, ty, tz)) {
-                            isEntityHit = true;
+                        boolean isEntityHit = false;
+                        if (!isBlockHit) {
+                            for (Entity entity : entities) {
+                                if (entity.getBoundingBox().contains(tx, ty, tz)) {
+                                    isEntityHit = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (isBlockHit || isEntityHit) {
+                            double rx = tx - px;
+                            double ry = ty - py;
+                            double rz = tz - pz;
+
+                            double cosPitch = Math.cos(pitchRadPlayer);
+                            double sinPitch = Math.sin(pitchRadPlayer);
+                            double ryPitch = ry * cosPitch - rz * sinPitch;
+                            double rzPitch = ry * sinPitch + rz * cosPitch;
+
+                            double cosYaw = Math.cos(yawRadPlayer);
+                            double sinYaw = Math.sin(yawRadPlayer);
+                            double rxYaw = rx * cosYaw + rzPitch * sinYaw;
+                            double rzYaw = -rx * sinYaw + rzPitch * cosYaw;
+
+                            float x_ros = (float) rzYaw;
+                            float y_ros = (float) rxYaw;
+                            float z_ros = (float) ryPitch;
+
+                            points.add(x_ros);
+                            points.add(y_ros);
+                            points.add(z_ros);
                             break;
                         }
                     }
-
-                    if (isBlockHit || isEntityHit) {
-                        double rx = tx - px;
-                        double ry = ty - py;
-                        double rz = tz - pz;
-
-                        double cosPitch = Math.cos(pitchRadPlayer);
-                        double sinPitch = Math.sin(pitchRadPlayer);
-                        double ryPitch = ry * cosPitch - rz * sinPitch;
-                        double rzPitch = ry * sinPitch + rz * cosPitch;
-
-                        double cosYaw = Math.cos(yawRadPlayer);
-                        double sinYaw = Math.sin(yawRadPlayer);
-                        double rxYaw = rx * cosYaw + rzPitch * sinYaw;
-                        double rzYaw = -rx * sinYaw + rzPitch * cosYaw;
-
-                        float x_ros = (float) rzYaw;
-                        float y_ros = (float) rxYaw;
-                        float z_ros = (float) ryPitch;
-
-                        points.add(x_ros);
-                        points.add(y_ros);
-                        points.add(z_ros);
-                        break; // Ray hit something
-                    }
                 }
             }
-        }
 
-        int pointCount = points.size() / 3;
-        if (pointCount == 0) {
-            LOGGER.warn("No points detected in pointcloud scan, skipping publish.");
-            return;
-        }
+            int pointCount = points.size() / 3;
+            if (pointCount == 0) {
+                LOGGER.warn("No points detected in pointcloud scan, skipping publish.");
+                return;
+            }
 
-        ByteBuffer buffer = ByteBuffer.allocate(pointCount * 12).order(ByteOrder.LITTLE_ENDIAN);
-        for (Float f : points) buffer.putFloat(f);
+            ByteBuffer buffer = ByteBuffer.allocate(pointCount * 12).order(ByteOrder.LITTLE_ENDIAN);
+            for (Float f : points) buffer.putFloat(f);
 
-        PointCloud2 msg = new PointCloud2();
-        Header header = new Header();
-        header.setStamp(Time.now());
-        header.setFrameId("player");
-        msg.setHeader(header);
+            PointCloud2 msg = new PointCloud2();
+            Header header = new Header();
+            header.setStamp(Time.now());
+            header.setFrameId("player");
+            msg.setHeader(header);
 
-        msg.setHeight(1);
-        msg.setWidth(pointCount);
-        msg.setPointStep(12);
-        msg.setRowStep(pointCount * 12);
-        msg.setIsDense(true);
-        msg.setIsBigendian(false);
+            msg.setHeight(1);
+            msg.setWidth(pointCount);
+            msg.setPointStep(12);
+            msg.setRowStep(pointCount * 12);
+            msg.setIsDense(true);
+            msg.setIsBigendian(false);
 
-        List<PointField> fields = new ArrayList<>();
-        fields.add(createPointField("x", 0));
-        fields.add(createPointField("y", 4));
-        fields.add(createPointField("z", 8));
-        msg.setFields(fields);
-        msg.setData(buffer.array());
+            List<PointField> fields = new ArrayList<>();
+            fields.add(createPointField("x", 0));
+            fields.add(createPointField("y", 4));
+            fields.add(createPointField("z", 8));
+            msg.setFields(fields);
+            msg.setData(buffer.array());
 
-        publisher.publish(msg);
-        // LOGGER.info("Published improved pointcloud with {} points", pointCount);
+            publisher.publish(msg);
+        });
     }
 
     private PointField createPointField(String name, int offset) {

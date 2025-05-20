@@ -45,40 +45,41 @@ public class TwistSubscriber extends BaseComposableNode {
     public void applyPlayerMovement() {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
-        
+
         if (player != null && !minecraft.isPaused()) {
-            // Scale the values based on config
             double maxSpeed = Config.COMMON.maxSpeed.get();
-            double speedFactor = maxSpeed / 20.0; // Convert to blocks per tick
-            
-            // Apply linear movement (forward/backward and strafe)
+            double speedFactor = maxSpeed / 20.0;
+
             if (Math.abs(lastLinearX) > 0.1 || Math.abs(lastLinearY) > 0.1 || Math.abs(lastLinearZ) > 0.1) {
-                // Convert ROS coordinate system to Minecraft
-                // In ROS, X is forward, Y is left, Z is up
-                // Apply the movement directly to the player's motion
-                double forwardMovement = lastLinearX * speedFactor;
-                double sidewaysMovement = -lastLinearY * speedFactor; // Negative because ROS Y is left
-                double verticalMovement = lastLinearZ > 0.1 ? 1.0 : 0.0; // Jump if linear_z > 0.1
-                
-                // Get player's current look direction for movement relative to where they're facing
                 float yaw = player.getYRot();
-                double yawRadians = Math.toRadians(yaw);
-                
-                // Calculate the components of movement based on player's orientation
-                double movX = -Math.sin(yawRadians) * forwardMovement - Math.cos(yawRadians) * sidewaysMovement;
-                double movZ = Math.cos(yawRadians) * forwardMovement - Math.sin(yawRadians) * sidewaysMovement;
-                
-                // Set the player's position
-                player.setPos(player.getX() + movX, player.getY() + verticalMovement, player.getZ() + movZ);
+                double yawRad = Math.toRadians(yaw);
+
+                double forward = lastLinearX * speedFactor;
+                double strafe = -lastLinearY * speedFactor;
+
+                double dx = -Math.sin(yawRad) * forward - Math.cos(yawRad) * strafe;
+                double dz = Math.cos(yawRad) * forward - Math.sin(yawRad) * strafe;
+
+                double dy = player.getDeltaMovement().y(); // preserve current vertical motion
+
+                // ジャンプ処理（ジャンプ中でなければジャンプ）
+                // ジャンプ処理（ジャンプ中でなければジャンプ）
+                if (lastLinearZ > 0.1 && player.verticalCollision) {
+                    dy = 0.42; // Minecraft のジャンプ速度
+                }
+
+
+                // deltaMovementを使って自然な移動にする
+                player.setDeltaMovement(dx, dy, dz);
+                player.hasImpulse = true; // deltaMovementを使う場合にはtrueにする
             }
-            
-            // Apply rotation (angular movement)
+
+            // 回転処理（なめらかにする）
             if (Math.abs(lastAngularZ) > 0.1 || Math.abs(lastAngularY) > 0.1) {
-                // Rotate the player (negative because ROS angular Z is counterclockwise)
-                float rotationAmountZ = (float)(-lastAngularZ * speedFactor * 10); // Adjust sensitivity
-                float rotationAmountY = (float)(lastAngularY * speedFactor * 10); // Adjust sensitivity for vertical look
-                player.setYRot(player.getYRot() + rotationAmountZ);
-                player.setXRot(player.getXRot() + rotationAmountY);
+                float rotZ = (float)(-lastAngularZ * speedFactor * 10);
+                float rotY = (float)(lastAngularY * speedFactor * 10);
+                player.setYRot(player.getYRot() + rotZ);
+                player.setXRot(player.getXRot() + rotY);
             }
         }
     }
