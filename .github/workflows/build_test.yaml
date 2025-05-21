@@ -21,4 +21,4 @@ jobs:
 
       - name: build mod
         run: |
-          . /ws/minecraft_ros2/gradlew prepareRunClientCompile
+          ./gradlew prepareRunClientCompile
