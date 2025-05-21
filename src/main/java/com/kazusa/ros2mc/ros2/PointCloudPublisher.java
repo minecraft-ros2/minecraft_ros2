@@ -1,31 +1,35 @@
 package com.kazusa.ros2mc.ros2;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import org.ros2.rcljava.Time;
 import org.ros2.rcljava.node.BaseComposableNode;
 import org.ros2.rcljava.publisher.Publisher;
 import org.ros2.rcljava.timer.WallTimer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import std_msgs.msg.Header;
 import geometry_msgs.msg.Point32;
-import sensor_msgs.msg.PointCloud;
-import sensor_msgs.msg.ChannelFloat32;
-import tf2_msgs.msg.TFMessage;
 import geometry_msgs.msg.TransformStamped;
+import sensor_msgs.msg.ChannelFloat32;
+import sensor_msgs.msg.PointCloud;
+import std_msgs.msg.Header;
+import tf2_msgs.msg.TFMessage;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+
 
 public class PointCloudPublisher extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(PointCloudPublisher.class);
@@ -57,21 +61,28 @@ public class PointCloudPublisher extends BaseComposableNode {
         var player = minecraft.player;
 
         CompletableFuture.runAsync(() -> {
-            int verticalSteps = 90;
-            int horizontalSteps = 90;
+            int verticalSteps = 180;
+            int horizontalSteps = 180;
             double maxDistance = 5.0;
-            double stepSize = 0.05;
+            double stepSize = 0.1;
             List<Point32> points = new ArrayList<>();
             List<Float> rList = new ArrayList<>();
             List<Float> gList = new ArrayList<>();
             List<Float> bList = new ArrayList<>();
 
+            // --- 事前にエンティティの色情報を取得 ---
             List<Entity> entities = level.getEntities(
                     player,
                     new AABB(px - maxDistance, py - maxDistance, pz - maxDistance,
                              px + maxDistance, py + maxDistance, pz + maxDistance),
                     entity -> !entity.is(player)
             );
+
+            Map<Entity, float[]> entityColors = new HashMap<>();
+            for (Entity entity : entities) {
+                float[] rgb = getEntityColor(entity);
+                entityColors.put(entity, rgb);
+            }
 
             for (int d = 0; d < verticalSteps; d++) {
                 for (int h = 0; h < horizontalSteps; h++) {
@@ -104,17 +115,17 @@ public class PointCloudPublisher extends BaseComposableNode {
                             }
                         }
 
-                        boolean isEntityHit = false;
+                        Entity hitEntity = null;
                         if (!isBlockHit) {
                             for (Entity entity : entities) {
                                 if (entity.getBoundingBox().contains(tx, ty, tz)) {
-                                    isEntityHit = true;
+                                    hitEntity = entity;
                                     break;
                                 }
                             }
                         }
 
-                        if (isBlockHit || isEntityHit) {
+                        if (isBlockHit || hitEntity != null) {
                             double rx = tx - px;
                             double ry = ty - py;
                             double rz = tz - pz;
@@ -139,13 +150,26 @@ public class PointCloudPublisher extends BaseComposableNode {
                             point.setZ(z_ros);
                             points.add(point);
 
-                            int color = blockState.getMapColor(level, blockPos).col;
-                            float r = ((color >> 16) & 0xFF) / 255.0f;
-                            float g = ((color >> 8) & 0xFF) / 255.0f;
-                            float b = (color & 0xFF) / 255.0f;
-                            rList.add(r);
-                            gList.add(g);
-                            bList.add(b);
+                            if (isBlockHit) {
+                                int color = blockState.getMapColor(level, blockPos).col;
+                                float r = ((color >> 16) & 0xFF) / 255.0f;
+                                float g = ((color >> 8) & 0xFF) / 255.0f;
+                                float b = (color & 0xFF) / 255.0f;
+                                rList.add(r);
+                                gList.add(g);
+                                bList.add(b);
+                            } else if (hitEntity != null && entityColors.containsKey(hitEntity)) {
+                                float[] rgb = entityColors.get(hitEntity);
+                                if (rgb == null) {
+                                    rList.add(1.0f);
+                                    gList.add(1.0f);
+                                    bList.add(1.0f);
+                                } else {
+                                    rList.add(rgb[0]);
+                                    gList.add(rgb[1]);
+                                    bList.add(rgb[2]);
+                                }
+                            }
 
                             break;
                         }
@@ -215,6 +239,55 @@ public class PointCloudPublisher extends BaseComposableNode {
 
             publisher.publish(msg);
         });
+    }
+
+    private float[] getEntityColor(Entity entity) {
+        try {
+            Minecraft mc = Minecraft.getInstance();
+            EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
+            ResourceLocation texLocation = dispatcher.getRenderer(entity).getTextureLocation(entity);
+
+            if (texLocation == null || texLocation.getPath().startsWith("textures/atlas/")) {
+                LOGGER.warn("Skipping texture for entity: {}", texLocation);
+                return null;
+            }
+
+            var resourceOpt = mc.getResourceManager().getResource(texLocation);  // ← ここ変更
+            if (resourceOpt.isEmpty()) {
+                LOGGER.warn("Texture not found for entity: {}", texLocation);
+                return null;
+            }
+
+            InputStream stream = resourceOpt.get().open();
+            BufferedImage img = ImageIO.read(stream);
+
+            int width = img.getWidth();
+            int height = img.getHeight();
+            long rSum = 0, gSum = 0, bSum = 0, count = 0;
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int argb = img.getRGB(x, y);
+                    int alpha = (argb >> 24) & 0xFF;
+                    if (alpha < 16) continue;
+                    int r = (argb >> 16) & 0xFF;
+                    int g = (argb >> 8) & 0xFF;
+                    int b = argb & 0xFF;
+                    rSum += r;
+                    gSum += g;
+                    bSum += b;
+                    count++;
+                }
+            }
+            if (count == 0) return null;
+            return new float[]{
+                rSum / (float) count / 255.0f,
+                gSum / (float) count / 255.0f,
+                bSum / (float) count / 255.0f
+            };
+        } catch (Exception e) {
+            LOGGER.warn("Failed to load texture for entity {}: {}", entity.getType(), e.toString());
+            return null;
+        }
     }
 
     private ChannelFloat32 createChannel(String name, List<Float> values) {

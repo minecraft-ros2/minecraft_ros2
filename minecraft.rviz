@@ -99,7 +99,7 @@ Visualization Manager:
       Class: rviz_default_plugins/PointCloud
       Color: 255; 255; 255
       Color Transformer: RGBF32
-      Decay Time: 10000
+      Decay Time: 1000
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
@@ -111,7 +111,7 @@ Visualization Manager:
       Selectable: true
       Size (Pixels): 5
       Size (m): 0.30000001192092896
-      Style: Boxes
+      Style: Points
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -168,7 +168,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 23.369829177856445
+      Distance: 60.94898223876953
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -183,10 +183,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.2903985381126404
+      Pitch: 1.2347966432571411
       Target Frame: player
       Value: Orbit (rviz_default_plugins)
-      Yaw: 2.993581771850586
+      Yaw: 3.803584337234497
     Saved: ~
 Window Geometry:
   Displays:

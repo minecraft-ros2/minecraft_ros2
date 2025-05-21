@@ -32,7 +32,7 @@ public class ImagePublisher extends BaseComposableNode {
 
             // 100x200くらいになるように調整
 
-            int scale = 1;
+            int scale = 2;
             int scaledWidth = width / scale;
             int scaledHeight = height / scale;
 
