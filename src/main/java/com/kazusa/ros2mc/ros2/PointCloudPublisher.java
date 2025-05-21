@@ -1,4 +1,5 @@
 package com.kazusa.ros2mc.ros2;
+import com.kazusa.ros2mc.ros2.Point3D;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -8,6 +9,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.ClipContext.Block;
+import net.minecraft.world.level.ClipContext.Fluid;
 
 import org.ros2.rcljava.Time;
 import org.ros2.rcljava.node.BaseComposableNode;
@@ -39,10 +46,14 @@ public class PointCloudPublisher extends BaseComposableNode {
     private final WallTimer timer;
     private final Minecraft minecraft;
 
+    private final List<Point3D> baseVector = new ArrayList<>();
+
     // Exmaple parameter: Hesai XT32
-    private final double horizontalResolutionDeg = 1.8;  // 水平角解像度
-    private final double verticalResolutionDeg   = 1.0;  // 垂直角解像度
-    private final double verticalFovDeg          = 31.0; // 垂直視野角
+    private final double horizontalResolutionDeg = 0.18;  // 水平角解像度[°]
+    private final double verticalResolutionDeg   = 1.0;   // 垂直角解像度[°]
+    private final double verticalFovDeg          = 31.0;  // 垂直視野角[°]
+    private final double minimumDistance         = 0.05;  // 最低測定距離[m]
+    private final double maxmiumDistance         = 120;   // 最大測定距離[m]
 
     public PointCloudPublisher() {
         super("minecraft_pointcloud_publisher");
@@ -52,6 +63,22 @@ public class PointCloudPublisher extends BaseComposableNode {
         timer = node.createWallTimer(100, TimeUnit.MILLISECONDS, this::publishAsyncLidarScan);
         LOGGER.info("Initialized with horizRes={}° vertRes={}° vertFOV={}°",
             horizontalResolutionDeg, verticalResolutionDeg, verticalFovDeg);
+
+        int vertSteps = (int)(verticalFovDeg / verticalResolutionDeg) + 1;
+        int horizSteps = (int)(360.0 / horizontalResolutionDeg) + 1;
+
+        double minPitch = Math.toRadians(-verticalFovDeg/2);
+        double maxPitch = Math.toRadians(verticalFovDeg/2);
+        for (int iv = 0; iv < vertSteps; iv++) {
+            double pitch = minPitch + (maxPitch-minPitch) * iv/(vertSteps-1);
+            for (int ih = 0; ih < horizSteps; ih++){
+                double yaw = Math.toRadians(-180 + ih*horizontalResolutionDeg);
+                double dx = Math.cos(pitch)*Math.sin(yaw);
+                double dy = Math.sin(pitch);
+                double dz = Math.cos(pitch)*Math.cos(yaw);
+                baseVector.add(new Point3D(dx, dy, dz));
+            }
+        }
     }
 
     private void publishAsyncLidarScan() {
@@ -67,7 +94,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         var player = minecraft.player;
 
         CompletableFuture.runAsync(() -> {
-            double maxDistance = 20.0;
+            long startNano = System.nanoTime();
             double stepSize = 0.1;
             List<Point32> points = new ArrayList<>();
             List<Float> rList = new ArrayList<>();
@@ -84,8 +111,8 @@ public class PointCloudPublisher extends BaseComposableNode {
             // エンティティ色情報事前取得
             List<Entity> entities = level.getEntities(
                 player,
-                new AABB(px - maxDistance, py - maxDistance, pz - maxDistance,
-                         px + maxDistance, py + maxDistance, pz + maxDistance),
+                new AABB(px - maxmiumDistance, py - maxmiumDistance, pz - maxmiumDistance,
+                         px + maxmiumDistance, py + maxmiumDistance, pz + maxmiumDistance),
                 e -> !e.is(player)
             );
             Map<Entity, float[]> entityColors = new HashMap<>();
@@ -93,49 +120,36 @@ public class PointCloudPublisher extends BaseComposableNode {
                 entityColors.put(e, getEntityColor(e));
             }
 
-            for (int iv = 0; iv < vertSteps; iv++) {
-                double pitch = minPitch + (maxPitch-minPitch) * iv/(vertSteps-1);
-                for (int ih = 0; ih < horizSteps; ih++) {
-                    double yaw = Math.toRadians(-180 + ih*horizontalResolutionDeg);
-                    double dx = Math.cos(pitch)*Math.sin(yaw);
-                    double dy = Math.sin(pitch);
-                    double dz = Math.cos(pitch)*Math.cos(yaw);
+            double cosP=Math.cos(pitchRadPlayer), sinP=Math.sin(pitchRadPlayer);
+            double cosY=Math.cos(yawRadPlayer), sinY=Math.sin(yawRadPlayer);
+            for(Point3D dir : baseVector){
+                Vec3 start = new Vec3(px + dir.x * minimumDistance, py + dir.y * minimumDistance, pz + dir.z * minimumDistance);
+                Vec3 end   = start.add(dir.x * maxmiumDistance, dir.y * maxmiumDistance, dir.z * maxmiumDistance);
+                ClipContext rtc = new ClipContext(
+                    start,
+                    end,
+                    Block.OUTLINE,
+                    Fluid.NONE,
+                    minecraft.player
+                );
+                BlockHitResult bhr = minecraft.level.clip(rtc);
+                if (bhr.getType() == HitResult.Type.BLOCK){
+                    Vec3 hit = bhr.getLocation();
+                    double rx = hit.x - px;
+                    double ry = hit.y - py;
+                    double rz = hit.z - pz;
 
-                    for (double dist = 0; dist <= maxDistance; dist += stepSize) {
-                        double tx = px + dx*dist;
-                        double ty = py + dy*dist;
-                        double tz = pz + dz*dist;
-
-                        BlockPos bp = new BlockPos((int)Math.floor(tx),(int)Math.floor(ty),(int)Math.floor(tz));
-                        BlockState bs = level.getBlockState(bp);
-                        if (bs.getBlock().toString().toLowerCase().contains("glass")) continue;
-                        VoxelShape vs = bs.getCollisionShape(level,bp);
-                        boolean hitBlock=false;
-                        if(!vs.isEmpty()){
-                            for(AABB a:vs.toAabbs()){ if(a.move(bp).contains(tx,ty,tz)){ hitBlock=true; break; }}
-                        }
-                        Entity hitEntity=null;
-                        if(!hitBlock){ for(Entity e:entities){ if(e.getBoundingBox().contains(tx,ty,tz)){ hitEntity=e; break; } }}
-
-                        if(hitBlock||hitEntity!=null){
-                            double rx=tx-px, ry=ty-py, rz=tz-pz;
-                            double cosP=Math.cos(pitchRadPlayer), sinP=Math.sin(pitchRadPlayer);
-                            double ryP=ry*cosP-rz*sinP, rzP=ry*sinP+rz*cosP;
-                            double cosY=Math.cos(yawRadPlayer), sinY=Math.sin(yawRadPlayer);
-                            double rxY=rx*cosY+rzP*sinY, rzY=-rx*sinY+rzP*cosY;
-                            Point32 pt=new Point32(); pt.setX((float)rzY);
-                            pt.setY((float)rxY); pt.setZ((float)ryP); points.add(pt);
-                            if(hitBlock){int c=bs.getMapColor(level,bp).col;
-                                rList.add(((c>>16)&0xFF)/255f);
-                                gList.add(((c>>8)&0xFF)/255f);
-                                bList.add((c&0xFF)/255f);
-                            } else {
-                                float[] col=entityColors.get(hitEntity);
-                                if(col==null){rList.add(1f);gList.add(1f);bList.add(1f);} else {rList.add(col[0]);gList.add(col[1]);bList.add(col[2]);}
-                            }
-                            break;
-                        }
-                    }
+                    
+                    double ryP=ry*cosP-rz*sinP, rzP=ry*sinP+rz*cosP;
+                    double rxY=rx*cosY+rzP*sinY, rzY=-rx*sinY+rzP*cosY;
+                    Point32 pt=new Point32(); pt.setX((float)rzY);
+                    pt.setY((float)rxY); pt.setZ((float)ryP); points.add(pt);
+                    BlockPos bp = bhr.getBlockPos();
+                    BlockState bs = minecraft.level.getBlockState(bp);
+                    int c = bs.getMapColor(minecraft.level, bp).col;
+                    rList.add(((c >> 16) & 0xFF) / 255f);
+                    gList.add(((c >>  8) & 0xFF) / 255f);
+                    bList.add(( c        & 0xFF) / 255f);
                 }
             }
 
@@ -200,6 +214,9 @@ public class PointCloudPublisher extends BaseComposableNode {
             msg.setChannels(channels);
 
             publisher.publish(msg);
+            long endNano = System.nanoTime();
+            double elapsedMs = (endNano - startNano) / 1_000_000.0;
+            LOGGER.info("LIDAR scan compute time: {} ms", String.format("%.2f", elapsedMs));
         });
     }
 
@@ -215,7 +232,7 @@ public class PointCloudPublisher extends BaseComposableNode {
 
             // テクスチャなし、またはアトラスの場合はスキップ
             if (texLocation == null || texLocation.getPath().startsWith("textures/atlas/")) {
-                LOGGER.warn("Skipping texture for entity: {}", texLocation);
+                // LOGGER.warn("Skipping texture for entity: {}", texLocation);
                 return null;
             }
 
