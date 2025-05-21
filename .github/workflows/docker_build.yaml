@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 2-feat-add-docker-build
   workflow_dispatch:
   schedule:
     - cron: '0 15 * * *'
