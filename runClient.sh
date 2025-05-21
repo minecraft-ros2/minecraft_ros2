@@ -1,2 +1,2 @@
-source ~/ros2_java_ws/install/setup.bash
+source $ROS2JAVA_INSTALL/setup.bash
 ./gradlew runClient --stacktrace
