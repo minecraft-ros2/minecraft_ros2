@@ -15,6 +15,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ClipContext.Block;
 import net.minecraft.world.level.ClipContext.Fluid;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 
 import org.ros2.rcljava.Time;
 import org.ros2.rcljava.node.BaseComposableNode;
@@ -38,6 +40,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.Objects;
+import java.util.Optional;
 
 
 public class PointCloudPublisher extends BaseComposableNode {
@@ -98,7 +101,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         var player = minecraft.player;
 
         CompletableFuture.runAsync(() -> {
-            // long startNano = System.nanoTime();
+            long startNano = System.nanoTime();
 
             List<Entity> entities = level.getEntities(
                 player,
@@ -133,32 +136,66 @@ public class PointCloudPublisher extends BaseComposableNode {
                                         ClipContext.Fluid.NONE,
                                         player)
                     );
-                    if (bhr.getType() != HitResult.Type.BLOCK) {
-                        return null;
+                    double blockDist = Double.POSITIVE_INFINITY;
+                    Vec3   blockHit  = null;
+                    if (bhr.getType() == HitResult.Type.BLOCK) {
+                        blockHit  = bhr.getLocation();
+                        blockDist = blockHit.distanceTo(start);
                     }
 
-                    Vec3 hit = bhr.getLocation();
-                    double rx = hit.x - px;
-                    double ry = hit.y - py;
-                    double rz = hit.z - pz;
+                    Entity closestE = null;
+                    Vec3   entityHit = null;
+                    double entityDist = Double.POSITIVE_INFINITY;
+                    for (Entity e : entities) {
+                        var bb = e.getBoundingBox();
+                        Vec3 hit = bb.clip(start, end).orElse(null);
+                        if (hit != null) {
+                            double d = hit.distanceTo(start);
+                            if (d < entityDist) {
+                                entityDist = d;
+                                entityHit  = hit;
+                                closestE   = e;
+                            }
+                        }
+                    }
 
-                    double ryP = ry * cosP - rz * sinP;
-                    double rzP = ry * sinP + rz * cosP;
-                    double rxY = rx * cosY + rzP * sinY;
-                    double rzY = -rx * sinY + rzP * cosY;
+                    if (entityHit != null && entityDist < blockDist) {
+                        Vec3 hit = entityHit;
+                        double rx = hit.x - px, ry = hit.y - py, rz = hit.z - pz;
+                        double ryP = ry * cosP - rz * sinP;
+                        double rzP = ry * sinP + rz * cosP;
+                        double rxY = rx * cosY + rzP * sinY;
+                        double rzY = -rx * sinY + rzP * cosY;
 
-                    Point32 pt = new Point32();
-                    pt.setX((float) rzY);
-                    pt.setY((float) rxY);
-                    pt.setZ((float) ryP);
+                        Point32 pt = new Point32();
+                        pt.setX((float) rzY);
+                        pt.setY((float) rxY);
+                        pt.setZ((float) ryP);
 
-                    BlockPos bp = bhr.getBlockPos();
-                    int c = level.getBlockState(bp).getMapColor(level, bp).col;
-                    float rf = ((c >> 16) & 0xFF) / 255f;
-                    float gf = ((c >>  8) & 0xFF) / 255f;
-                    float bf = ( c        & 0xFF) / 255f;
+                        float[] col = entityColors.getOrDefault(closestE, new float[]{1f,0f,0f});
+                        return new ScanResult(pt, col[0], col[1], col[2]);
+                    } else if (blockHit != null) {
+                        Vec3 hit = blockHit;
+                        double rx = hit.x - px, ry = hit.y - py, rz = hit.z - pz;
+                        double ryP = ry * cosP - rz * sinP;
+                        double rzP = ry * sinP + rz * cosP;
+                        double rxY = rx * cosY + rzP * sinY;
+                        double rzY = -rx * sinY + rzP * cosY;
 
-                    return new ScanResult(pt, rf, gf, bf);
+                        Point32 pt = new Point32();
+                        pt.setX((float) rzY);
+                        pt.setY((float) rxY);
+                        pt.setZ((float) ryP);
+
+                        BlockPos bp = bhr.getBlockPos();
+                        int c = level.getBlockState(bp).getMapColor(level, bp).col;
+                        float rf = ((c >> 16) & 0xFF) / 255f;
+                        float gf = ((c >>  8) & 0xFF) / 255f;
+                        float bf = ( c        & 0xFF) / 255f;
+
+                        return new ScanResult(pt, rf, gf, bf);
+                    }
+                    return null;
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -236,9 +273,9 @@ public class PointCloudPublisher extends BaseComposableNode {
 
             publisher.publish(msg);
 
-            // long endNano = System.nanoTime();
-            // double elapsedMs = (endNano - startNano) / 1_000_000.0;
-            // LOGGER.info("LIDAR scan compute time: {} ms", String.format("%.2f", elapsedMs));
+            long endNano = System.nanoTime();
+            double elapsedMs = (endNano - startNano) / 1_000_000.0;
+            LOGGER.info("LIDAR scan compute time: {} ms", String.format("%.2f", elapsedMs));
         });
     }
 
