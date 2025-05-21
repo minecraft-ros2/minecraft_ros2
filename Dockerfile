@@ -14,8 +14,9 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-vcstool
 
-RUN python3 -m pip install -U git+https://github.com/colcon/colcon-gradle
-RUN python3 -m pip install --no-deps -U git+https://github.com/colcon/colcon-ros-gradle
+RUN python3 -m pip install -U git+https://github.com/colcon/colcon-gradle \
+    && python3 -m pip install --no-deps -U git+https://github.com/colcon/colcon-ros-gradle \
+    && rm -rf /root/.cache/pip
 
 WORKDIR /ws/ros2_java_ws
 
