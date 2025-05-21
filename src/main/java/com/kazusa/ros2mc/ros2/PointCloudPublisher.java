@@ -39,13 +39,19 @@ public class PointCloudPublisher extends BaseComposableNode {
     private final WallTimer timer;
     private final Minecraft minecraft;
 
+    // Exmaple parameter: Hesai XT32
+    private final double horizontalResolutionDeg = 1.8;  // 水平角解像度
+    private final double verticalResolutionDeg   = 1.0;  // 垂直角解像度
+    private final double verticalFovDeg          = 31.0; // 垂直視野角
+
     public PointCloudPublisher() {
         super("minecraft_pointcloud_publisher");
         publisher = this.node.createPublisher(PointCloud.class, "/player/pointcloud");
         tfPublisher = this.node.createPublisher(TFMessage.class, "/tf");
         minecraft = Minecraft.getInstance();
-        timer = this.node.createWallTimer(100, TimeUnit.MILLISECONDS, this::publishAsyncLidarScan);
-        LOGGER.info("PointCloudPublisher initialized and publishing to '/player/pointcloud'");
+        timer = node.createWallTimer(100, TimeUnit.MILLISECONDS, this::publishAsyncLidarScan);
+        LOGGER.info("Initialized with horizRes={}° vertRes={}° vertFOV={}°",
+            horizontalResolutionDeg, verticalResolutionDeg, verticalFovDeg);
     }
 
     private void publishAsyncLidarScan() {
@@ -61,116 +67,72 @@ public class PointCloudPublisher extends BaseComposableNode {
         var player = minecraft.player;
 
         CompletableFuture.runAsync(() -> {
-            int verticalSteps = 180;
-            int horizontalSteps = 180;
-            double maxDistance = 5.0;
+            double maxDistance = 20.0;
             double stepSize = 0.1;
             List<Point32> points = new ArrayList<>();
             List<Float> rList = new ArrayList<>();
             List<Float> gList = new ArrayList<>();
             List<Float> bList = new ArrayList<>();
 
-            // --- 事前にエンティティの色情報を取得 ---
-            List<Entity> entities = level.getEntities(
-                    player,
-                    new AABB(px - maxDistance, py - maxDistance, pz - maxDistance,
-                             px + maxDistance, py + maxDistance, pz + maxDistance),
-                    entity -> !entity.is(player)
-            );
+            // 垂直FOVと解像度からステップ数を計算
+            int vertSteps = (int)(verticalFovDeg / verticalResolutionDeg) + 1;
+            int horizSteps = (int)(360.0 / horizontalResolutionDeg) + 1;
 
+            double minPitch = Math.toRadians(-verticalFovDeg/2);
+            double maxPitch = Math.toRadians(verticalFovDeg/2);
+
+            // エンティティ色情報事前取得
+            List<Entity> entities = level.getEntities(
+                player,
+                new AABB(px - maxDistance, py - maxDistance, pz - maxDistance,
+                         px + maxDistance, py + maxDistance, pz + maxDistance),
+                e -> !e.is(player)
+            );
             Map<Entity, float[]> entityColors = new HashMap<>();
-            for (Entity entity : entities) {
-                float[] rgb = getEntityColor(entity);
-                entityColors.put(entity, rgb);
+            for (Entity e : entities) {
+                entityColors.put(e, getEntityColor(e));
             }
 
-            for (int d = 0; d < verticalSteps; d++) {
-                for (int h = 0; h < horizontalSteps; h++) {
-                    double pitch = Math.PI * ((double) d / verticalSteps - 0.5);
-                    double yaw = 2 * Math.PI * h / horizontalSteps;
-
-                    double dx = Math.cos(pitch) * Math.sin(yaw);
+            for (int iv = 0; iv < vertSteps; iv++) {
+                double pitch = minPitch + (maxPitch-minPitch) * iv/(vertSteps-1);
+                for (int ih = 0; ih < horizSteps; ih++) {
+                    double yaw = Math.toRadians(-180 + ih*horizontalResolutionDeg);
+                    double dx = Math.cos(pitch)*Math.sin(yaw);
                     double dy = Math.sin(pitch);
-                    double dz = Math.cos(pitch) * Math.cos(yaw);
+                    double dz = Math.cos(pitch)*Math.cos(yaw);
 
-                    for (double dist = 0.0; dist <= maxDistance; dist += stepSize) {
-                        double tx = px + dx * dist;
-                        double ty = py + dy * dist;
-                        double tz = pz + dz * dist;
+                    for (double dist = 0; dist <= maxDistance; dist += stepSize) {
+                        double tx = px + dx*dist;
+                        double ty = py + dy*dist;
+                        double tz = pz + dz*dist;
 
-                        BlockPos blockPos = new BlockPos((int) Math.floor(tx), (int) Math.floor(ty), (int) Math.floor(tz));
-                        BlockState blockState = level.getBlockState(blockPos);
-                        String blockName = blockState.getBlock().toString().toLowerCase();
-                        if (blockName.contains("glass")) continue;
-
-                        VoxelShape shape = blockState.getCollisionShape(level, blockPos);
-                        boolean isBlockHit = false;
-                        if (!shape.isEmpty()) {
-                            for (AABB shapeAABB : shape.toAabbs()) {
-                                AABB movedAABB = shapeAABB.move(blockPos);
-                                if (movedAABB.contains(tx, ty, tz)) {
-                                    isBlockHit = true;
-                                    break;
-                                }
-                            }
+                        BlockPos bp = new BlockPos((int)Math.floor(tx),(int)Math.floor(ty),(int)Math.floor(tz));
+                        BlockState bs = level.getBlockState(bp);
+                        if (bs.getBlock().toString().toLowerCase().contains("glass")) continue;
+                        VoxelShape vs = bs.getCollisionShape(level,bp);
+                        boolean hitBlock=false;
+                        if(!vs.isEmpty()){
+                            for(AABB a:vs.toAabbs()){ if(a.move(bp).contains(tx,ty,tz)){ hitBlock=true; break; }}
                         }
+                        Entity hitEntity=null;
+                        if(!hitBlock){ for(Entity e:entities){ if(e.getBoundingBox().contains(tx,ty,tz)){ hitEntity=e; break; } }}
 
-                        Entity hitEntity = null;
-                        if (!isBlockHit) {
-                            for (Entity entity : entities) {
-                                if (entity.getBoundingBox().contains(tx, ty, tz)) {
-                                    hitEntity = entity;
-                                    break;
-                                }
+                        if(hitBlock||hitEntity!=null){
+                            double rx=tx-px, ry=ty-py, rz=tz-pz;
+                            double cosP=Math.cos(pitchRadPlayer), sinP=Math.sin(pitchRadPlayer);
+                            double ryP=ry*cosP-rz*sinP, rzP=ry*sinP+rz*cosP;
+                            double cosY=Math.cos(yawRadPlayer), sinY=Math.sin(yawRadPlayer);
+                            double rxY=rx*cosY+rzP*sinY, rzY=-rx*sinY+rzP*cosY;
+                            Point32 pt=new Point32(); pt.setX((float)rzY);
+                            pt.setY((float)rxY); pt.setZ((float)ryP); points.add(pt);
+                            if(hitBlock){int c=bs.getMapColor(level,bp).col;
+                                rList.add(((c>>16)&0xFF)/255f);
+                                gList.add(((c>>8)&0xFF)/255f);
+                                bList.add((c&0xFF)/255f);
+                            } else {
+                                float[] col=entityColors.get(hitEntity);
+                                if(col==null){rList.add(1f);gList.add(1f);bList.add(1f);} else {rList.add(col[0]);gList.add(col[1]);bList.add(col[2]);}
                             }
-                        }
-
-                        if (isBlockHit || hitEntity != null) {
-                            double rx = tx - px;
-                            double ry = ty - py;
-                            double rz = tz - pz;
-
-                            double cosPitch = Math.cos(pitchRadPlayer);
-                            double sinPitch = Math.sin(pitchRadPlayer);
-                            double ryPitch = ry * cosPitch - rz * sinPitch;
-                            double rzPitch = ry * sinPitch + rz * cosPitch;
-
-                            double cosYaw = Math.cos(yawRadPlayer);
-                            double sinYaw = Math.sin(yawRadPlayer);
-                            double rxYaw = rx * cosYaw + rzPitch * sinYaw;
-                            double rzYaw = -rx * sinYaw + rzPitch * cosYaw;
-
-                            float x_ros = (float) rzYaw;
-                            float y_ros = (float) rxYaw;
-                            float z_ros = (float) ryPitch;
-
-                            Point32 point = new Point32();
-                            point.setX(x_ros);
-                            point.setY(y_ros);
-                            point.setZ(z_ros);
-                            points.add(point);
-
-                            if (isBlockHit) {
-                                int color = blockState.getMapColor(level, blockPos).col;
-                                float r = ((color >> 16) & 0xFF) / 255.0f;
-                                float g = ((color >> 8) & 0xFF) / 255.0f;
-                                float b = (color & 0xFF) / 255.0f;
-                                rList.add(r);
-                                gList.add(g);
-                                bList.add(b);
-                            } else if (hitEntity != null && entityColors.containsKey(hitEntity)) {
-                                float[] rgb = entityColors.get(hitEntity);
-                                if (rgb == null) {
-                                    rList.add(1.0f);
-                                    gList.add(1.0f);
-                                    bList.add(1.0f);
-                                } else {
-                                    rList.add(rgb[0]);
-                                    gList.add(rgb[1]);
-                                    bList.add(rgb[2]);
-                                }
-                            }
-
                             break;
                         }
                     }
@@ -241,18 +203,23 @@ public class PointCloudPublisher extends BaseComposableNode {
         });
     }
 
+    /**
+     * エンティティのテクスチャから平均色を計算して返す
+     * @return RGB(float[3]) or null
+     */
     private float[] getEntityColor(Entity entity) {
         try {
             Minecraft mc = Minecraft.getInstance();
             EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
             ResourceLocation texLocation = dispatcher.getRenderer(entity).getTextureLocation(entity);
 
+            // テクスチャなし、またはアトラスの場合はスキップ
             if (texLocation == null || texLocation.getPath().startsWith("textures/atlas/")) {
                 LOGGER.warn("Skipping texture for entity: {}", texLocation);
                 return null;
             }
 
-            var resourceOpt = mc.getResourceManager().getResource(texLocation);  // ← ここ変更
+            var resourceOpt = mc.getResourceManager().getResource(texLocation);
             if (resourceOpt.isEmpty()) {
                 LOGGER.warn("Texture not found for entity: {}", texLocation);
                 return null;
@@ -268,7 +235,7 @@ public class PointCloudPublisher extends BaseComposableNode {
                 for (int x = 0; x < width; x++) {
                     int argb = img.getRGB(x, y);
                     int alpha = (argb >> 24) & 0xFF;
-                    if (alpha < 16) continue;
+                    if (alpha < 16) continue;  // 透明度の低いピクセルは無視
                     int r = (argb >> 16) & 0xFF;
                     int g = (argb >> 8) & 0xFF;
                     int b = argb & 0xFF;
@@ -290,6 +257,9 @@ public class PointCloudPublisher extends BaseComposableNode {
         }
     }
 
+    /**
+     * PointCloud の ChannelFloat32 を生成するヘルパー
+     */
     private ChannelFloat32 createChannel(String name, List<Float> values) {
         ChannelFloat32 channel = new ChannelFloat32();
         channel.setName(name);
