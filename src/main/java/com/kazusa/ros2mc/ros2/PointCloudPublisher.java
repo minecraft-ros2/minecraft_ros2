@@ -101,7 +101,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         var player = minecraft.player;
 
         CompletableFuture.runAsync(() -> {
-            long startNano = System.nanoTime();
+            // long startNano = System.nanoTime();
 
             List<Entity> entities = level.getEntities(
                 player,
@@ -273,9 +273,9 @@ public class PointCloudPublisher extends BaseComposableNode {
 
             publisher.publish(msg);
 
-            long endNano = System.nanoTime();
-            double elapsedMs = (endNano - startNano) / 1_000_000.0;
-            LOGGER.info("LIDAR scan compute time: {} ms", String.format("%.2f", elapsedMs));
+            // long endNano = System.nanoTime();
+            // double elapsedMs = (endNano - startNano) / 1_000_000.0;
+            // LOGGER.info("LIDAR scan compute time: {} ms", String.format("%.2f", elapsedMs));
         });
     }
 
