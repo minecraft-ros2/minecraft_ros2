@@ -36,6 +36,8 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.Objects;
 
 
 public class PointCloudPublisher extends BaseComposableNode {
@@ -81,6 +83,8 @@ public class PointCloudPublisher extends BaseComposableNode {
         }
     }
 
+    private static record ScanResult(Point32 pt, float r, float g, float b) {}
+
     private void publishAsyncLidarScan() {
         if (minecraft.player == null || minecraft.level == null) return;
 
@@ -95,24 +99,11 @@ public class PointCloudPublisher extends BaseComposableNode {
 
         CompletableFuture.runAsync(() -> {
             long startNano = System.nanoTime();
-            double stepSize = 0.1;
-            List<Point32> points = new ArrayList<>();
-            List<Float> rList = new ArrayList<>();
-            List<Float> gList = new ArrayList<>();
-            List<Float> bList = new ArrayList<>();
 
-            // 垂直FOVと解像度からステップ数を計算
-            int vertSteps = (int)(verticalFovDeg / verticalResolutionDeg) + 1;
-            int horizSteps = (int)(360.0 / horizontalResolutionDeg) + 1;
-
-            double minPitch = Math.toRadians(-verticalFovDeg/2);
-            double maxPitch = Math.toRadians(verticalFovDeg/2);
-
-            // エンティティ色情報事前取得
             List<Entity> entities = level.getEntities(
                 player,
                 new AABB(px - maxmiumDistance, py - maxmiumDistance, pz - maxmiumDistance,
-                         px + maxmiumDistance, py + maxmiumDistance, pz + maxmiumDistance),
+                        px + maxmiumDistance, py + maxmiumDistance, pz + maxmiumDistance),
                 e -> !e.is(player)
             );
             Map<Entity, float[]> entityColors = new HashMap<>();
@@ -120,45 +111,76 @@ public class PointCloudPublisher extends BaseComposableNode {
                 entityColors.put(e, getEntityColor(e));
             }
 
-            double cosP=Math.cos(pitchRadPlayer), sinP=Math.sin(pitchRadPlayer);
-            double cosY=Math.cos(yawRadPlayer), sinY=Math.sin(yawRadPlayer);
-            for(Point3D dir : baseVector){
-                Vec3 start = new Vec3(px + dir.x * minimumDistance, py + dir.y * minimumDistance, pz + dir.z * minimumDistance);
-                Vec3 end   = start.add(dir.x * maxmiumDistance, dir.y * maxmiumDistance, dir.z * maxmiumDistance);
-                ClipContext rtc = new ClipContext(
-                    start,
-                    end,
-                    Block.OUTLINE,
-                    Fluid.NONE,
-                    minecraft.player
-                );
-                BlockHitResult bhr = minecraft.level.clip(rtc);
-                if (bhr.getType() == HitResult.Type.BLOCK){
+            double cosP = Math.cos(pitchRadPlayer), sinP = Math.sin(pitchRadPlayer);
+            double cosY = Math.cos(yawRadPlayer),   sinY = Math.sin(yawRadPlayer);
+
+            List<ScanResult> results = baseVector.parallelStream()
+                .map(dir -> {
+                    Vec3 start = new Vec3(
+                        px + dir.x * minimumDistance,
+                        py + dir.y * minimumDistance,
+                        pz + dir.z * minimumDistance
+                    );
+                    Vec3 end = start.add(
+                        dir.x * maxmiumDistance,
+                        dir.y * maxmiumDistance,
+                        dir.z * maxmiumDistance
+                    );
+
+                    BlockHitResult bhr = level.clip(
+                        new ClipContext(start, end,
+                                        ClipContext.Block.OUTLINE,
+                                        ClipContext.Fluid.NONE,
+                                        player)
+                    );
+                    if (bhr.getType() != HitResult.Type.BLOCK) {
+                        return null;
+                    }
+
                     Vec3 hit = bhr.getLocation();
                     double rx = hit.x - px;
                     double ry = hit.y - py;
                     double rz = hit.z - pz;
 
-                    
-                    double ryP=ry*cosP-rz*sinP, rzP=ry*sinP+rz*cosP;
-                    double rxY=rx*cosY+rzP*sinY, rzY=-rx*sinY+rzP*cosY;
-                    Point32 pt=new Point32(); pt.setX((float)rzY);
-                    pt.setY((float)rxY); pt.setZ((float)ryP); points.add(pt);
-                    BlockPos bp = bhr.getBlockPos();
-                    BlockState bs = minecraft.level.getBlockState(bp);
-                    int c = bs.getMapColor(minecraft.level, bp).col;
-                    rList.add(((c >> 16) & 0xFF) / 255f);
-                    gList.add(((c >>  8) & 0xFF) / 255f);
-                    bList.add(( c        & 0xFF) / 255f);
-                }
-            }
+                    double ryP = ry * cosP - rz * sinP;
+                    double rzP = ry * sinP + rz * cosP;
+                    double rxY = rx * cosY + rzP * sinY;
+                    double rzY = -rx * sinY + rzP * cosY;
 
-            if (points.isEmpty()) {
+                    Point32 pt = new Point32();
+                    pt.setX((float) rzY);
+                    pt.setY((float) rxY);
+                    pt.setZ((float) ryP);
+
+                    BlockPos bp = bhr.getBlockPos();
+                    int c = level.getBlockState(bp).getMapColor(level, bp).col;
+                    float rf = ((c >> 16) & 0xFF) / 255f;
+                    float gf = ((c >>  8) & 0xFF) / 255f;
+                    float bf = ( c        & 0xFF) / 255f;
+
+                    return new ScanResult(pt, rf, gf, bf);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+            if (results.isEmpty()) {
                 LOGGER.warn("No points detected in pointcloud scan, skipping publish.");
                 return;
             }
 
-            // --- TF transform ---
+            List<Point32> points = results.stream()
+                                        .map(ScanResult::pt)
+                                        .collect(Collectors.toList());
+            List<Float>   rList   = results.stream()
+                                        .map(ScanResult::r)
+                                        .collect(Collectors.toList());
+            List<Float>   gList   = results.stream()
+                                        .map(ScanResult::g)
+                                        .collect(Collectors.toList());
+            List<Float>   bList   = results.stream()
+                                        .map(ScanResult::b)
+                                        .collect(Collectors.toList());
+
             TransformStamped transform = new TransformStamped();
             Header tfHeader = new Header();
             tfHeader.setStamp(Time.now());
@@ -189,7 +211,6 @@ public class PointCloudPublisher extends BaseComposableNode {
             double qx = sr * cp * cy - cr * sp * sy;
             double qy = cr * sp * cy + sr * cp * sy;
             double qz = cr * cp * sy - sr * sp * cy;
-
             transform.getTransform().getRotation().setX(qx);
             transform.getTransform().getRotation().setY(qy);
             transform.getTransform().getRotation().setZ(qz);
@@ -199,7 +220,7 @@ public class PointCloudPublisher extends BaseComposableNode {
             tfMessage.setTransforms(List.of(transform));
             tfPublisher.publish(tfMessage);
 
-            // --- PointCloud message ---
+            // --- PointCloud メッセージ作成・送信 ---
             PointCloud msg = new PointCloud();
             Header header = new Header();
             header.setStamp(Time.now());
@@ -214,11 +235,13 @@ public class PointCloudPublisher extends BaseComposableNode {
             msg.setChannels(channels);
 
             publisher.publish(msg);
+
             long endNano = System.nanoTime();
             double elapsedMs = (endNano - startNano) / 1_000_000.0;
             LOGGER.info("LIDAR scan compute time: {} ms", String.format("%.2f", elapsedMs));
         });
     }
+
 
     /**
      * エンティティのテクスチャから平均色を計算して返す
