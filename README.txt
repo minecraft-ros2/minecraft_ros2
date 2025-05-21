@@ -1,5 +1,7 @@
 # Minecraft\_ros2
 
+[日本語](README_JP.md)
+
 **ros2mc** is a MOD that integrates Minecraft with ROS 2. It allows Minecraft world data—such as player position and block states—to be published to ROS 2, enabling visualization in RViz2 and potential interaction from ROS 2 nodes.
 
 This repository contains the source code for the MOD and provides a foundation for experiments and research involving Minecraft and robotics middleware.
