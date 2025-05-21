@@ -40,7 +40,7 @@ public class PointCloudPublisher extends BaseComposableNode {
     private final Minecraft minecraft;
 
     // Exmaple parameter: Hesai XT32
-    private final double horizontalResolutionDeg = 0.18;  // 水平角解像度
+    private final double horizontalResolutionDeg = 1.8;  // 水平角解像度
     private final double verticalResolutionDeg   = 1.0;  // 垂直角解像度
     private final double verticalFovDeg          = 31.0; // 垂直視野角
 
