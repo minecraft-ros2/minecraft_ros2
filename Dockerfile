@@ -5,14 +5,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install dependencies
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     default-jdk \
     gradle \
     curl \
     git \
     python3-colcon-common-extensions \
     python3-pip \
-    python3-vcstool
+    python3-vcstool && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install -U git+https://github.com/colcon/colcon-gradle \
     && python3 -m pip install --no-deps -U git+https://github.com/colcon/colcon-ros-gradle \
