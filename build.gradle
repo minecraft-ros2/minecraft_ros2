@@ -60,23 +60,53 @@ repositories {
     }
 }
 
+def ros2JavaPath = System.getenv("ROS2JAVA_INSTALL_PATH")
+
+if (ros2JavaPath == null) {
+    throw new GradleException("環境変数 ROS2JAVA_INSTALL_PATH が設定されていません。")
+}
+
+// パッケージ名一覧（必要なものをここに列挙）
+def ros2Packages = [
+    "rcljava",
+    "rcljava_common"
+]
+
+def ros2Messages =[
+    "geometry_msgs",
+    "std_msgs",
+    "builtin_interfaces",
+    "sensor_msgs",
+    "tf2_msgs"
+]
+
+// JARファイルパスを動的に収集
+def ros2PackageJars = ros2Packages.collect { pkg ->
+    file("${ros2JavaPath}/${pkg}/share/${pkg}/java/${pkg}.jar")
+}
+
+def ros2MessageJars = ros2Messages.collect { msg ->
+    file("${ros2JavaPath}/${msg}/share/${msg}/java/${msg}_messages.jar")
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // ROS 2 Java依存関係
-    implementation files('libs/rcljava.jar')
-    implementation files('libs/rcljava_common.jar')
-    implementation files('libs/geometry_msgs_messages.jar')
-    implementation files('libs/std_msgs_messages.jar')
-    implementation files('libs/builtin_interfaces_messages.jar')
-    implementation files('libs/sensor_msgs_messages.jar')
-    implementation files('libs/tf2_msgs_messages.jar')
+    // ROS 2 Java 依存関係
+    ros2PackageJars.each { jar ->
+        implementation files(jar)
+    }
+
+    ros2MessageJars.each { jar ->
+        implementation files(jar)
+    }
 
     // 互換性のための設定
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') {
         version { strictly '5.0.4' }
     }
 }
+
 
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
