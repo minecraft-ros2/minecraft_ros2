@@ -1,0 +1,24 @@
+name: build mod
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      packages: read
+
+    container:
+      image: ghcr.io/kazu-321/minecraft_ros2:latest
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: build mod
+        run: |
+          . /ws/minecraft_ros2/gradlew prepareRunClientCompile
