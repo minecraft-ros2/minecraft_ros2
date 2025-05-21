@@ -67,7 +67,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         var player = minecraft.player;
 
         CompletableFuture.runAsync(() -> {
-            double maxDistance = 5.0;
+            double maxDistance = 20.0;
             double stepSize = 0.1;
             List<Point32> points = new ArrayList<>();
             List<Float> rList = new ArrayList<>();
