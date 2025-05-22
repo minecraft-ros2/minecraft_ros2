@@ -18,8 +18,38 @@ This repository contains the source code for the MOD and provides a foundation f
 * [ros2\_java](https://github.com/minecraft-ros2/ros2_java)
 
 ---
+## 🚢 Quick Start with Docker
 
-## Installation Guide
+Docker provides a convenient way to try out the environment in this repository. Follow the steps below to get started.
+
+> **⚠️ Prerequisites**
+> Docker must be installed, and you need to configure your host to share GUI applications (e.g., using `xhost`).
+
+### Steps
+
+1. **Allow GUI Access**
+
+   ```bash
+   xhost +local:root
+   ```
+
+2. **Start the Docker Container**
+
+   ```bash
+   docker run -it --rm \
+     --env="DISPLAY=$DISPLAY" \
+     --env="QT_X11_NO_MITSHM=1" \
+     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+     ghcr.io/minecraft-ros2/minecraft_ros2:latest
+   ```
+
+   * If you want to use the GPU, add `--gpus all` (requires NVIDIA Container Toolkit):
+
+3. **Verify Operation with Tools like `rviz2`**
+
+   Once ROS 2 is running inside the container, you can start tools like `rviz2` from another terminal to visualize the data.
+---
+## Source Installation Guide
 
 ### 1. Build ros2\_java
 
