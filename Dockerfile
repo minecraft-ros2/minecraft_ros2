@@ -1,4 +1,4 @@
-FROM ghcr.io/kazu-321/ros2_java:latest
+FROM ghcr.io/minecraft-ros2/ros2_java:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 

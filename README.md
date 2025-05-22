@@ -13,7 +13,7 @@ This repository contains the source code for the MOD and provides a foundation f
 * Ubuntu 22.04
 * Minecraft (Java Edition)
 * ROS 2 Humble or later
-* [ros2\_java](https://github.com/kazu-321/ros2_java)
+* [ros2\_java](https://github.com/minecraft-ros2/ros2_java)
 
 ---
 
@@ -27,7 +27,7 @@ Install Minecraft Java Edition on Ubuntu 22.04 and verify that it runs correctly
 
 Follow the instructions at the following repository to build `ros2_java`:
 
-👉 [https://github.com/kazu-321/ros2\_java](https://github.com/kazu-321/ros2_java)
+👉 [https://github.com/minecraft-ros2/ros2\_java](https://github.com/minecraft-ros2/ros2_java)
 
 ### 3. Set Environment Variable
 

@@ -11,7 +11,7 @@
 * Ubuntu 22.04
 * Minecraft（Java Edition）
 * ROS 2 Humble 以降
-* [ros2\_java](https://github.com/kazu-321/ros2_java)
+* [ros2\_java](https://github.com/minecraft-ros2/ros2_java)
 
 ---
 
@@ -25,7 +25,7 @@ Ubuntu 22.04 に Minecraft Java Edition をインストールし、正常に動�
 
 以下のリポジトリの手順に従って `ros2_java` をビルドしてください：
 
-👉 [https://github.com/kazu-321/ros2\_java](https://github.com/kazu-321/ros2_java)
+👉 [https://github.com/minecraft-ros2/ros2\_java](https://github.com/minecraft-ros2/ros2_java)
 
 ### 3. 環境変数の設定
 
