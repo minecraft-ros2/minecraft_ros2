@@ -1,6 +1,6 @@
-package com.kazusa.ros2mc.events;
+package com.kazusa.minecraft_ros2.events;
 
-import com.kazusa.ros2mc.ros2.ROS2Manager;
+import com.kazusa.minecraft_ros2.ros2.ROS2Manager;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handles Forge events for the ROS2MC mod
+ * Handles Forge events for the minecraft_ros2 mod
  */
 @Mod.EventBusSubscriber
 public class ModEventHandler {

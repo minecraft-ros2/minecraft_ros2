@@ -1,7 +1,7 @@
-package com.kazusa.ros2mc.events;
+package com.kazusa.minecraft_ros2.events;
 
-import com.kazusa.ros2mc.ros2.ROS2Manager;
-import com.kazusa.ros2mc.ros2.ImagePublisher;
+import com.kazusa.minecraft_ros2.ros2.ROS2Manager;
+import com.kazusa.minecraft_ros2.ros2.ImagePublisher;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
