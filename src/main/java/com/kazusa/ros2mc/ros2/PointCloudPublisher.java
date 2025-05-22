@@ -29,6 +29,7 @@ import tf2_msgs.msg.TFMessage;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -106,8 +107,18 @@ public class PointCloudPublisher extends BaseComposableNode {
                 return;
             }
 
-            publishTransform(px, py, pz, yawRad, pitchRad);
-            publishPointCloud(results);
+             try {
+                publishTransform(px, py, pz, yawRad, pitchRad);
+            } catch (Exception e) {
+                LOGGER.error("Failed to publish transform", e);
+            }
+
+            try {
+                publishPointCloud(results);
+            } catch (Exception e) {
+                LOGGER.error("Failed to publish point cloud", e);
+            }
+
 
             double elapsed = (System.nanoTime() - start) / 1_000_000.0;
             LOGGER.info("LIDAR scan compute time: {} ms", String.format("%.2f", elapsed));
@@ -148,21 +159,26 @@ public class PointCloudPublisher extends BaseComposableNode {
                                      Level level,
                                      List<Entity> entities,
                                      Map<Entity, float[]> colors) {
-        Vec3 start = new Vec3(px + dir.x * minDistance,
-                              py + dir.y * minDistance,
-                              pz + dir.z * minDistance);
-        Vec3 end = start.add(dir.x * maxDistance,
-                             dir.y * maxDistance,
-                             dir.z * maxDistance);
-        BlockHitResult bhr =
-            level.clip(new ClipContext(start, end, Block.OUTLINE, Fluid.NONE, minecraft.player));
+        try {
+            Vec3 start = new Vec3(px + dir.x * minDistance,
+                                py + dir.y * minDistance,
+                                pz + dir.z * minDistance);
+            Vec3 end = start.add(dir.x * maxDistance,
+                                dir.y * maxDistance,
+                                dir.z * maxDistance);
+            BlockHitResult bhr =
+                level.clip(new ClipContext(start, end, Block.OUTLINE, Fluid.NONE, minecraft.player));
 
-        HitData hd = findClosestHit(start, bhr, level, entities);
-        if (hd == null) return null;
+            HitData hd = findClosestHit(start, bhr, level, entities);
+            if (hd == null) return null;
 
-        Point32 pt = rotateToSensorFrame(hd.location, px, py, pz, cosP, sinP, cosY, sinY);
-        float[] col = hd.entity != null ? colors.get(hd.entity) : hd.blockColor;
-        return new ScanResult(pt, col[0], col[1], col[2]);
+            Point32 pt = rotateToSensorFrame(hd.location, px, py, pz, cosP, sinP, cosY, sinY);
+            float[] col = hd.entity != null ? colors.get(hd.entity) : hd.blockColor;
+            return new ScanResult(pt, col[0], col[1], col[2]);
+        } catch (Exception e) {
+            LOGGER.error("Error scanning direction {}", dir, e);
+            return null;
+        }
     }
 
     private static class HitData {
@@ -290,6 +306,7 @@ public class PointCloudPublisher extends BaseComposableNode {
      * Entity の平均色を取得
      */
     private float[] getEntityColor(Entity entity) {
+        InputStream in = null;
         try {
             ResourceLocation loc = Minecraft.getInstance()
                 .getEntityRenderDispatcher().getRenderer(entity)
@@ -297,7 +314,9 @@ public class PointCloudPublisher extends BaseComposableNode {
             if (loc == null || loc.getPath().startsWith("textures/atlas/")) return null;
             var resOpt = Minecraft.getInstance().getResourceManager().getResource(loc);
             if (resOpt.isEmpty()) return null;
-            BufferedImage img = ImageIO.read(resOpt.get().open());
+
+            in  = resOpt.get().open();
+            BufferedImage img = ImageIO.read(in);
             long r=0,g=0,b=0,c=0;
             for (int y=0;y<img.getHeight();y++) for (int x=0;x<img.getWidth();x++) {
                 int argb=img.getRGB(x,y);
@@ -312,6 +331,12 @@ public class PointCloudPublisher extends BaseComposableNode {
         } catch (Exception e) {
             LOGGER.warn("Failed to load texture: {}", e.toString());
             return null;
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ignored) { }
+            }
         }
     }
 
