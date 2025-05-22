@@ -23,13 +23,16 @@ import org.slf4j.LoggerFactory;
 import geometry_msgs.msg.Point32;
 import geometry_msgs.msg.TransformStamped;
 import sensor_msgs.msg.ChannelFloat32;
-import sensor_msgs.msg.PointCloud;
+import sensor_msgs.msg.PointField;
+import sensor_msgs.msg.PointCloud2;
 import std_msgs.msg.Header;
 import tf2_msgs.msg.TFMessage;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +41,7 @@ import java.util.stream.Collectors;
 public class PointCloudPublisher extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(PointCloudPublisher.class);
 
-    private final Publisher<PointCloud> publisher;
+    private final Publisher<PointCloud2> publisher;
     private final Publisher<TFMessage> tfPublisher;
     private final WallTimer timer;
     private final Minecraft minecraft;
@@ -50,6 +53,8 @@ public class PointCloudPublisher extends BaseComposableNode {
     private final double verticalFovDeg   = 31.0;
     private final double minDistance      = 0.05;
     private final double maxDistance      = 120.0;
+
+    private final boolean publishTF       = false;
 
     public PointCloudPublisher() {
         super("minecraft_pointcloud_publisher");
@@ -107,10 +112,12 @@ public class PointCloudPublisher extends BaseComposableNode {
                 return;
             }
 
-             try {
-                publishTransform(px, py, pz, yawRad, pitchRad);
-            } catch (Exception e) {
-                LOGGER.error("Failed to publish transform", e);
+            if (publishTF) {
+                try {
+                    publishTransform(px, py, pz, yawRad, pitchRad);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to publish transform", e);
+                }
             }
 
             try {
@@ -289,18 +296,44 @@ public class PointCloudPublisher extends BaseComposableNode {
     }
 
     private void publishPointCloud(List<ScanResult> results) {
-        PointCloud msg = new PointCloud();
+        PointCloud2 msg = new PointCloud2();
         Header header = new Header();
         header.setStamp(Time.now());
         header.setFrameId("player");
         msg.setHeader(header);
-        msg.setPoints(results.stream().map(ScanResult::pt).collect(Collectors.toList()));
 
-        List<ChannelFloat32> channels = new ArrayList<>();
-        channels.add(createChannel("r", results.stream().map(r -> r.r).collect(Collectors.toList())));
-        channels.add(createChannel("g", results.stream().map(r -> r.g).collect(Collectors.toList())));
-        channels.add(createChannel("b", results.stream().map(r -> r.b).collect(Collectors.toList())));
-        msg.setChannels(channels);
+        int pointCount = results.size();
+        msg.setHeight(1);
+        msg.setWidth(pointCount);
+
+        List<PointField> fields = new ArrayList<>();
+        fields.add(createField("x", 0, PointField.FLOAT32, 1));
+        fields.add(createField("y", 4, PointField.FLOAT32, 1));
+        fields.add(createField("z", 8, PointField.FLOAT32, 1));
+        fields.add(createField("rgb", 12, PointField.FLOAT32, 1));
+        msg.setFields(fields);
+
+        msg.setIsBigendian(false);
+        int pointStep = 16;
+        msg.setPointStep(pointStep);
+        msg.setRowStep(pointStep * pointCount);
+        msg.setIsDense(true);
+
+        ByteBuffer buf = ByteBuffer.allocate(pointCount * pointStep).order(ByteOrder.LITTLE_ENDIAN);
+        for (ScanResult r : results) {
+            buf.putFloat(r.pt.getX());
+            buf.putFloat(r.pt.getY());
+            buf.putFloat(r.pt.getZ());
+            int ir = (int)(r.r * 255) & 0xFF;
+            int ig = (int)(r.g * 255) & 0xFF;
+            int ib = (int)(r.b * 255) & 0xFF;
+            int rgbInt = (ir << 16) | (ig << 8) | ib;
+            buf.putFloat(Float.intBitsToFloat(rgbInt));
+        }
+        buf.rewind();
+        List<Byte> data = new ArrayList<>(buf.capacity());
+        while (buf.hasRemaining()) data.add(buf.get());
+        msg.setData(data);
 
         publisher.publish(msg);
     }
@@ -348,5 +381,14 @@ public class PointCloudPublisher extends BaseComposableNode {
         ch.setName(name);
         ch.setValues(vals);
         return ch;
+    }
+
+    private PointField createField(String name, int offset, byte datatype, int count) {
+        PointField f = new PointField();
+        f.setName(name);
+        f.setOffset(offset);
+        f.setDatatype(datatype);
+        f.setCount(count);
+        return f;
     }
 }
