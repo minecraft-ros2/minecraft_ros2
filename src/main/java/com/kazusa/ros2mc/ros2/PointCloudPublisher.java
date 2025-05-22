@@ -94,7 +94,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         Entity player = minecraft.player;
 
         CompletableFuture.runAsync(() -> {
-            long start = System.nanoTime();
+            // long start = System.nanoTime();
 
             List<Entity> entities = gatherEntities(level, player, px, py, pz);
             Map<Entity, float[]> colors = computeEntityColors(entities);
@@ -120,8 +120,8 @@ public class PointCloudPublisher extends BaseComposableNode {
             }
 
 
-            double elapsed = (System.nanoTime() - start) / 1_000_000.0;
-            LOGGER.info("LIDAR scan compute time: {} ms", String.format("%.2f", elapsed));
+            // double elapsed = (System.nanoTime() - start) / 1_000_000.0;
+            // LOGGER.info("LIDAR scan compute time: {} ms", String.format("%.2f", elapsed));
         });
     }
 
