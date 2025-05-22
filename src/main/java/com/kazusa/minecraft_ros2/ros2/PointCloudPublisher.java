@@ -1,6 +1,6 @@
-package com.kazusa.ros2mc.ros2;
+package com.kazusa.minecraft_ros2.ros2;
 
-import com.kazusa.ros2mc.ros2.Point3D;
+import com.kazusa.minecraft_ros2.ros2.Point3D;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.core.BlockPos;

@@ -1,4 +1,4 @@
-package com.kazusa.ros2mc.config;
+package com.kazusa.minecraft_ros2.config;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;

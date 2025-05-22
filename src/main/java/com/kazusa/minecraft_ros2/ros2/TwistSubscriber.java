@@ -1,6 +1,6 @@
-package com.kazusa.ros2mc.ros2;
+package com.kazusa.minecraft_ros2.ros2;
 
-import com.kazusa.ros2mc.config.Config;
+import com.kazusa.minecraft_ros2.config.Config;
 import org.ros2.rcljava.RCLJava;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;

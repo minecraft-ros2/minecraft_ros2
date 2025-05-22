@@ -1,4 +1,4 @@
-package com.kazusa.ros2mc.ros2;
+package com.kazusa.minecraft_ros2.ros2;
 
 import net.minecraft.client.Minecraft;
 import org.lwjgl.BufferUtils;
