@@ -11,7 +11,7 @@ jobs:
       packages: read
 
     container:
-      image: ghcr.io/kazu-321/minecraft_ros2:latest
+      image: ghcr.io/minecraft-ros2/minecraft_ros2:latest
 
     runs-on: ubuntu-latest
 
