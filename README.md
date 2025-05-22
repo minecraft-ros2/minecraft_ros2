@@ -78,9 +78,3 @@ Contributions are welcome! Feel free to open issues or pull requests.
 * [kazu-321](https://github.com/kazu-321)
 
 ---
-
-## Demo
-
-You can add screenshots or videos of the RViz2 integration here to show off the features. (Coming soon)
-
----

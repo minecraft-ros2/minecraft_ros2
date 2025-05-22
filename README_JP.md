@@ -76,9 +76,3 @@ rviz2 -d minecraft.rviz
 * [kazu-321](https://github.com/kazu-321)
 
 ---
-
-## デモ
-
-RViz2 連携の様子を示すスクリーンショットや動画などをここに追加できます（準備中）。
-
----
