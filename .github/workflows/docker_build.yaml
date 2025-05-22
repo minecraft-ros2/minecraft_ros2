@@ -4,10 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 15 * * *'
-  
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
