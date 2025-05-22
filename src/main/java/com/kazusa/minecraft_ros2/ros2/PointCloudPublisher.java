@@ -46,7 +46,7 @@ public class PointCloudPublisher extends BaseComposableNode {
     private final WallTimer timer;
     private final Minecraft minecraft;
     private final List<Point3D> baseVector = new ArrayList<>();
-    private PointCloud msg;
+    private PointCloud2 msg;
     private TFMessage tfMsg;
 
     // Parameters
