@@ -135,7 +135,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         Map<Entity, float[]> map = new HashMap<>();
         for (Entity e : entities) {
             float[] c = getEntityColor(e);
-            map.put(e, c != null ? c : new float[]{1f, 0f, 0f});
+            map.put(e, c != null ? c : new float[]{1f, 1f, 1f});
         }
         return map;
     }
@@ -168,6 +168,8 @@ public class PointCloudPublisher extends BaseComposableNode {
                                 dir.z * maxDistance);
             BlockHitResult bhr =
                 level.clip(new ClipContext(start, end, Block.OUTLINE, Fluid.NONE, minecraft.player));
+            String blockName = level.getBlockState(bhr.getBlockPos()).getBlock().toString().toLowerCase();
+            if (blockName.contains("glass"))return null;
 
             HitData hd = findClosestHit(start, bhr, level, entities);
             if (hd == null) return null;
@@ -223,6 +225,7 @@ public class PointCloudPublisher extends BaseComposableNode {
             hd.location   = blockHit;
             int c = level.getBlockState(bhr.getBlockPos())
                          .getMapColor(level, bhr.getBlockPos()).col;
+            
             hd.blockColor = new float[]{((c >> 16) & 0xFF) / 255f,
                                         ((c >> 8)  & 0xFF) / 255f,
                                         (c & 0xFF)        / 255f};
