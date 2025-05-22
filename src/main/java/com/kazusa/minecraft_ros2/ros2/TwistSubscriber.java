@@ -14,8 +14,8 @@ public class TwistSubscriber extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(TwistSubscriber.class);
     private Subscription<Twist> subscription;
 
-    Minecraft minecraft;
-    Player player;
+    private Minecraft minecraft;
+    private Player player;
 
     private double lastLinearX = 0.0;
     private double lastLinearY = 0.0;
