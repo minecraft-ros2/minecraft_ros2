@@ -21,17 +21,13 @@ This repository contains the source code for the MOD and provides a foundation f
 
 ## Installation Guide
 
-### 1. Install Minecraft
-
-Install Minecraft Java Edition on Ubuntu 22.04 and verify that it runs correctly.
-
-### 2. Build ros2\_java
+### 1. Build ros2\_java
 
 Follow the instructions at the following repository to build `ros2_java`:
 
 👉 [https://github.com/minecraft-ros2/ros2\_java](https://github.com/minecraft-ros2/ros2_java)
 
-### 3. Set Environment Variable
+### 2. Set Environment Variable
 
 Add the following line to your `.bashrc` or shell configuration file to specify the `install` directory of `ros2_java`:
 
@@ -45,7 +41,7 @@ After editing, apply the change by running:
 source ~/.bashrc
 ```
 
-### 4. Launch Minecraft
+### 3. Launch Minecraft
 
 Run the following script included in this repository to start Minecraft with the MOD:
 
@@ -53,7 +49,7 @@ Run the following script included in this repository to start Minecraft with the
 ./runClient.sh
 ```
 
-### 5. Visualize in RViz2
+### 4. Visualize in RViz2
 
 Load `minecraft.rviz` in RViz2 to visualize Minecraft data:
 
