@@ -59,31 +59,6 @@ rviz2 -d minecraft.rviz
 
 ---
 
-## デモ
-
-### lidarslam_ros2を使ったSLAM
-1. lidarslam_ros2をセットアップする
-    ```bash
-    cd ~/ros2_ws/src
-    git clone --recursive https://github.com/rsasaki0109/lidarslam_ros2
-    cd ..
-    rosdep install --from-paths src --ignore-src -r -y
-    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-    ```
-3. launchファイルとパラメータファイルを書き換える
-    
-    `minecraft_ros2/example`内にある`lidarslam.launch.py`と`lidarslam.yaml`を`lidarslam_ros2/lidarslam`配下にあるものと置き換えます。
-
-4. 起動
-    ```bash
-    ./runClient.sh
-    ```
-    ```bash
-    ros2 launch lidarslam lidarslam.launch.py
-    ```
-
----
-
 ## ライセンス
 
 このプロジェクトは GNU Lesser General Public License v2.1（LGPL-2.1）でライセンスされています。
