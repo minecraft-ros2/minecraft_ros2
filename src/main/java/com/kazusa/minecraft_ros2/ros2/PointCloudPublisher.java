@@ -58,7 +58,7 @@ public class PointCloudPublisher extends BaseComposableNode {
 
     public PointCloudPublisher() {
         super("minecraft_pointcloud_publisher");
-        publisher = node.createPublisher(PointCloud.class, "/player/pointcloud");
+        publisher = node.createPublisher(PointCloud2.class, "/player/pointcloud");
         tfPublisher = node.createPublisher(TFMessage.class, "/tf");
         minecraft = Minecraft.getInstance();
         initBaseVector();
