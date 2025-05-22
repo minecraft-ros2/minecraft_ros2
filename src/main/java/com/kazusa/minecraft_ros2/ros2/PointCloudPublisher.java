@@ -46,6 +46,8 @@ public class PointCloudPublisher extends BaseComposableNode {
     private final WallTimer timer;
     private final Minecraft minecraft;
     private final List<Point3D> baseVector = new ArrayList<>();
+    private PointCloud2 msg;
+    private TFMessage tfMsg;
 
     // Parameters
     private final double horizontalResDeg = 0.18;
@@ -290,17 +292,19 @@ public class PointCloudPublisher extends BaseComposableNode {
         transform.getTransform().getRotation().setZ(qz);
         transform.getTransform().getRotation().setW(qw);
 
-        TFMessage msg = new TFMessage();
-        msg.setTransforms(List.of(transform));
-        tfPublisher.publish(msg);
+        if (tfMsg == null) {
+            tfMsg = new TFMessage();
+        }
+        tfMsg.setTransforms(List.of(transform));
+        tfPublisher.publish(tfMsg);
     }
 
     private void publishPointCloud(List<ScanResult> results) {
-        PointCloud2 msg = new PointCloud2();
-        Header header = new Header();
-        header.setStamp(Time.now());
-        header.setFrameId("player");
-        msg.setHeader(header);
+        if (msg == null) {
+            msg = new PointCloud2();
+        }
+        msg.getHeader().setStamp(Time.now());
+        msg.getHeader().setFrameId("player");
 
         int pointCount = results.size();
         msg.setHeight(1);
