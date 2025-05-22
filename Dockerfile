@@ -24,7 +24,7 @@ WORKDIR /ws/ros2_java_ws
 RUN apt-get update \
     && rosdep update \
     && mkdir -p src \
-    && curl -skL https://raw.githubusercontent.com/kazu-321/ros2_java/main/ros2_java_desktop.repos | vcs import src \
+    && curl -sSL https://raw.githubusercontent.com/kazu-321/ros2_java/main/ros2_java_desktop.repos | vcs import src \
     && rosdep install --from-paths src -y -i --skip-keys "ament_tools" \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /root/.ros/sources.cache
