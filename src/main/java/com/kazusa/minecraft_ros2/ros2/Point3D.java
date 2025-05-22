@@ -1,4 +1,4 @@
-package com.kazusa.ros2mc.ros2;
+package com.kazusa.minecraft_ros2.ros2;
 
 public class Point3D {
     public double x, y, z;

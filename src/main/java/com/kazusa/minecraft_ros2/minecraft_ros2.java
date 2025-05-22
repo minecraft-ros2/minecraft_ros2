@@ -1,7 +1,7 @@
-package com.kazusa.ros2mc;
+package com.kazusa.minecraft_ros2;
 
-import com.kazusa.ros2mc.config.Config;
-import com.kazusa.ros2mc.ros2.ROS2Manager;
+import com.kazusa.minecraft_ros2.config.Config;
+import com.kazusa.minecraft_ros2.ros2.ROS2Manager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -17,13 +17,13 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 
 
-@Mod(Ros2mc.MOD_ID)
-public class Ros2mc {
-    public static final String MOD_ID = "ros2mc";
-    private static final Logger LOGGER = LoggerFactory.getLogger(Ros2mc.class);
+@Mod(minecraft_ros2.MOD_ID)
+public class minecraft_ros2 {
+    public static final String MOD_ID = "minecraft_ros2";
+    private static final Logger LOGGER = LoggerFactory.getLogger(minecraft_ros2.class);
 
-    public Ros2mc() throws NoSuchFieldException, IllegalAccessException {
-        LOGGER.info("Initializing ROS2MC mod");
+    public minecraft_ros2() throws NoSuchFieldException, IllegalAccessException {
+        LOGGER.info("Initializing minecraft_ros2 mod");
 
         // Register the setup methods for mod loading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
@@ -36,18 +36,18 @@ public class Ros2mc {
         // Register this mod to the MinecraftForge event bus
         MinecraftForge.EVENT_BUS.register(this);
 
-        LOGGER.info("ROS2MC mod initialized");
+        LOGGER.info("minecraft_ros2 mod initialized");
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        LOGGER.info("ROS2MC common setup");
+        LOGGER.info("minecraft_ros2 common setup");
         // Performed for both client and server setup
     }
 
 
 
     private void clientSetup(final FMLClientSetupEvent event) {
-        LOGGER.info("ROS2MC client setup");
+        LOGGER.info("minecraft_ros2 client setup");
 
         // Initialize ROS2 system on a separate thread to prevent blocking the main thread
         event.enqueueWork(() -> {
@@ -62,7 +62,7 @@ public class Ros2mc {
 
     private void onConfigLoad(final ModConfigEvent.Loading event) {
         if (event.getConfig().getSpec() == Config.COMMON_SPEC) {
-            LOGGER.info("Loading ROS2MC configuration");
+            LOGGER.info("Loading minecraft_ros2 configuration");
             // Configuration values are accessed directly from Config.COMMON
         }
     }
