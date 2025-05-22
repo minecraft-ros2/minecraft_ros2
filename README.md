@@ -61,6 +61,35 @@ rviz2 -d minecraft.rviz
 
 ---
 
+## Demo
+
+### SLAM using `lidarslam_ros2`
+
+1. **Set up `lidarslam_ros2`**
+
+   ```bash
+   cd ~/ros2_ws/src
+   git clone --recursive https://github.com/rsasaki0109/lidarslam_ros2
+   cd ..
+   rosdep install --from-paths src --ignore-src -r -y
+   colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+   ```
+
+2. **Replace launch and parameter files**
+
+   Replace the `lidarslam.launch.py` and `lidarslam.yaml` files located in `minecraft_ros2/example` with the ones found in the `lidarslam_ros2/lidarslam` directory.
+
+3. **Run**
+
+   ```bash
+   ./runClient.sh
+   ```
+
+   ```bash
+   ros2 launch lidarslam lidarslam.launch.py
+   ```
+--- 
+
 ## License
 
 This project is licensed under the GNU Lesser General Public License v2.1 (LGPL-2.1).
@@ -76,11 +105,5 @@ Contributions are welcome! Feel free to open issues or pull requests.
 ## Author
 
 * [kazu-321](https://github.com/kazu-321)
-
----
-
-## Demo
-
-You can add screenshots or videos of the RViz2 integration here to show off the features. (Coming soon)
 
 ---
