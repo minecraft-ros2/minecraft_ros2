@@ -18,20 +18,46 @@ This repository contains the source code for the MOD and provides a foundation f
 * [ros2\_java](https://github.com/minecraft-ros2/ros2_java)
 
 ---
+## 🚢 Quick Start with Docker
 
-## Installation Guide
+Docker provides a convenient way to try out the environment in this repository. Follow the steps below to get started.
 
-### 1. Install Minecraft
+> **⚠️ Prerequisites**
+> Docker must be installed, and you need to configure your host to share GUI applications (e.g., using `xhost`).
 
-Install Minecraft Java Edition on Ubuntu 22.04 and verify that it runs correctly.
+### Steps
 
-### 2. Build ros2\_java
+1. **Allow GUI Access**
+
+   ```bash
+   xhost +local:root
+   ```
+
+2. **Start the Docker Container**
+
+   ```bash
+   docker run -it --rm \
+     --env="DISPLAY=$DISPLAY" \
+     --env="QT_X11_NO_MITSHM=1" \
+     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+     ghcr.io/minecraft-ros2/minecraft_ros2:latest
+   ```
+
+   * If you want to use the GPU, add `--gpus all` (requires NVIDIA Container Toolkit):
+
+3. **Verify Operation with Tools like `rviz2`**
+
+   Once ROS 2 is running inside the container, you can start tools like `rviz2` from another terminal to visualize the data.
+---
+## Source Installation Guide
+
+### 1. Build ros2\_java
 
 Follow the instructions at the following repository to build `ros2_java`:
 
 👉 [https://github.com/minecraft-ros2/ros2\_java](https://github.com/minecraft-ros2/ros2_java)
 
-### 3. Set Environment Variable
+### 2. Set Environment Variable
 
 Add the following line to your `.bashrc` or shell configuration file to specify the `install` directory of `ros2_java`:
 
@@ -45,7 +71,7 @@ After editing, apply the change by running:
 source ~/.bashrc
 ```
 
-### 4. Launch Minecraft
+### 3. Launch Minecraft
 
 Run the following script included in this repository to start Minecraft with the MOD:
 
@@ -53,7 +79,7 @@ Run the following script included in this repository to start Minecraft with the
 ./runClient.sh
 ```
 
-### 5. Visualize in RViz2
+### 4. Visualize in RViz2
 
 Load `minecraft.rviz` in RViz2 to visualize Minecraft data:
 

@@ -17,19 +17,47 @@
 
 ---
 
-## インストール手順
+## 🐳 Docker で簡易的に試す方法
 
-### 1. Minecraft のインストール
+このリポジトリの環境を手軽に試すには、Docker を使った実行が便利です。以下の手順に従ってください。
+> **⚠️ 事前準備**
+> Docker および GUI アプリをホストと共有するための設定（`xhost` など）が必要です。
 
-Ubuntu 22.04 に Minecraft Java Edition をインストールし、正常に動作することを確認してください。
+### 手順
 
-### 2. ros2\_java のビルド
+1. **GUI アクセスを許可**
+
+   ```bash
+   xhost +local:root
+   ```
+
+2. **Docker コンテナを起動**
+
+   ```bash
+   docker run -it --rm \
+     --env="DISPLAY=$DISPLAY" \
+     --env="QT_X11_NO_MITSHM=1" \
+     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+     ghcr.io/minecraft-ros2/minecraft_ros2:latest
+   ```
+
+   * GPU を使いたい場合は `--gpus all` を追加してください（NVIDIA Container Toolkit のインストールが必要です）:
+
+
+3. **`rviz2` などで動作を確認**
+
+   コンテナ内で ROS 2 が立ち上がった後、別端末で `rviz2` を起動することで可視化が可能です：
+
+
+## ソースインストール手順
+
+### 1. ros2\_java のビルド
 
 以下のリポジトリの手順に従って `ros2_java` をビルドしてください：
 
 👉 [https://github.com/minecraft-ros2/ros2\_java](https://github.com/minecraft-ros2/ros2_java)
 
-### 3. 環境変数の設定
+### 2. 環境変数の設定
 
 `.bashrc` などのシェル設定ファイルに以下のように `ros2_java` の install ディレクトリを指定してください：
 
@@ -43,7 +71,7 @@ export ROS2JAVA_INSTALL_PATH=/home/USERNAME/ros2_java_ws/install
 source ~/.bashrc
 ```
 
-### 4. Minecraft の起動
+### 3. Minecraft の起動
 
 本リポジトリに含まれる以下のスクリプトを実行して、MOD付きの Minecraft を起動します：
 
@@ -51,7 +79,7 @@ source ~/.bashrc
 ./runClient.sh
 ```
 
-### 5. RViz2 での可視化
+### 4. RViz2 での可視化
 
 RViz2 を起動し、`minecraft.rviz` を読み込んで Minecraft のデータを可視化します：
 
