@@ -17,6 +17,7 @@ public class ImagePublisher extends BaseComposableNode {
 
     private final Publisher<Image> publisher;
     private final Minecraft minecraft;
+    Image rosImage;
 
     public ImagePublisher() {
         super("minecraft_image_publisher");
@@ -56,7 +57,6 @@ public class ImagePublisher extends BaseComposableNode {
             }
 
             // ROS2 Imageメッセージ作成
-            Image rosImage = new Image();
             rosImage.getHeader().setFrameId("player");
             rosImage.getHeader().setStamp(Time.now());
             rosImage.setWidth(scaledWidth);

@@ -13,6 +13,10 @@ import geometry_msgs.msg.Twist;
 public class TwistSubscriber extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(TwistSubscriber.class);
     private Subscription<Twist> subscription;
+
+    Minecraft minecraft;
+    Player player;
+
     private double lastLinearX = 0.0;
     private double lastLinearY = 0.0;
     private double lastLinearZ = 0.0;
@@ -43,8 +47,8 @@ public class TwistSubscriber extends BaseComposableNode {
      * Called from the game tick event to ensure movement happens on the client/main thread
      */
     public void applyPlayerMovement() {
-        Minecraft minecraft = Minecraft.getInstance();
-        Player player = minecraft.player;
+        minecraft = Minecraft.getInstance();
+        player = minecraft.player;
 
         if (player != null && !minecraft.isPaused()) {
             double maxSpeed = Config.COMMON.maxSpeed.get();
