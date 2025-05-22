@@ -301,7 +301,7 @@ public class PointCloudPublisher extends BaseComposableNode {
 
     private void publishPointCloud(List<ScanResult> results) {
         if (msg == null) {
-            msg = new PointCloud();
+            msg = new PointCloud2();
         }
         msg.getHeader().setStamp(Time.now());
         msg.getHeader().setFrameId("player");
