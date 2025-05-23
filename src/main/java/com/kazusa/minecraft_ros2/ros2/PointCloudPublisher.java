@@ -48,6 +48,7 @@ public class PointCloudPublisher extends BaseComposableNode {
     private final List<Point3D> baseVector = new ArrayList<>();
     private PointCloud2 msg;
     private TFMessage tfMsg;
+    private final Map<ResourceLocation, float[]> textureColorCache = new HashMap<>();
 
     // Parameters
     private final double horizontalResDeg = 0.18;
@@ -64,6 +65,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         tfPublisher = node.createPublisher(TFMessage.class, "/tf");
         minecraft = Minecraft.getInstance();
         initBaseVector();
+        preloadAllEntityTextures();
         timer = node.createWallTimer(100, TimeUnit.MILLISECONDS, this::publishAsyncLidarScan);
         LOGGER.info("Initialized with horizRes={}° vertRes={}° vertFOV={}°", horizontalResDeg, verticalResDeg, verticalFovDeg);
     }
@@ -91,6 +93,11 @@ public class PointCloudPublisher extends BaseComposableNode {
 
     private void publishAsyncLidarScan() {
         if (minecraft.player == null || minecraft.level == null) return;
+
+        if (textureColorCache.isEmpty()) {
+            preloadAllEntityTextures();
+        }
+
         double px = minecraft.player.getX();
         double py = minecraft.player.getY() + minecraft.player.getEyeHeight();
         double pz = minecraft.player.getZ();
@@ -108,11 +115,17 @@ public class PointCloudPublisher extends BaseComposableNode {
             double cosP = Math.cos(pitchRad), sinP = Math.sin(pitchRad);
             double cosY = Math.cos(yawRad),   sinY = Math.sin(yawRad);
 
+            // double elapsed_1 = (System.nanoTime() - start) / 1_000_000.0;
+            // start = System.nanoTime();
+
             List<ScanResult> results = performLidarScan(px, py, pz, cosP, sinP, cosY, sinY, level, entities, colors);
             if (results.isEmpty()) {
                 LOGGER.warn("No points detected, skipping publish.");
                 return;
             }
+
+            // double elapsed_2 = (System.nanoTime() - start) / 1_000_000.0;
+            // start = System.nanoTime();
 
             if (publishTF) {
                 try {
@@ -128,9 +141,9 @@ public class PointCloudPublisher extends BaseComposableNode {
                 LOGGER.error("Failed to publish point cloud", e);
             }
 
+            // double elapsed_3 = (System.nanoTime() - start) / 1_000_000.0;
 
-            // double elapsed = (System.nanoTime() - start) / 1_000_000.0;
-            // LOGGER.info("LIDAR scan compute time: {} ms", String.format("%.2f", elapsed));
+            // LOGGER.info("Color: {} ms, LiDAR: {} ms, ROS2: {} ms", String.format("%.2f", elapsed_1), String.format("%.2f", elapsed_2), String.format("%.2f", elapsed_3));
         });
     }
 
@@ -138,15 +151,6 @@ public class PointCloudPublisher extends BaseComposableNode {
         AABB area = new AABB(px - maxDistance, py - maxDistance, pz - maxDistance,
                              px + maxDistance, py + maxDistance, pz + maxDistance);
         return level.getEntities(player, area, e -> !e.is(player));
-    }
-
-    private Map<Entity, float[]> computeEntityColors(List<Entity> entities) {
-        Map<Entity, float[]> map = new HashMap<>();
-        for (Entity e : entities) {
-            float[] c = getEntityColor(e);
-            map.put(e, c != null ? c : new float[]{1f, 1f, 1f});
-        }
-        return map;
     }
 
     private List<ScanResult> performLidarScan(double px, double py, double pz,
@@ -345,39 +349,58 @@ public class PointCloudPublisher extends BaseComposableNode {
     /**
      * Entity の平均色を取得
      */
-    private float[] getEntityColor(Entity entity) {
-        InputStream in = null;
-        try {
-            ResourceLocation loc = Minecraft.getInstance()
-                .getEntityRenderDispatcher().getRenderer(entity)
-                .getTextureLocation(entity);
-            if (loc == null || loc.getPath().startsWith("textures/atlas/")) return null;
-            var resOpt = Minecraft.getInstance().getResourceManager().getResource(loc);
-            if (resOpt.isEmpty()) return null;
 
-            in  = resOpt.get().open();
-            BufferedImage img = ImageIO.read(in);
-            long r=0,g=0,b=0,c=0;
-            for (int y=0;y<img.getHeight();y++) for (int x=0;x<img.getWidth();x++) {
-                int argb=img.getRGB(x,y);
-                if (((argb>>>24)&0xFF)<16) continue;
-                r+=(argb>>16)&0xFF;
-                g+=(argb>>8)&0xFF;
-                b+=argb&0xFF;
-                c++;
+    private void preloadAllEntityTextures() {
+        var dispatcher = minecraft.getEntityRenderDispatcher();
+        dispatcher.renderers.values().forEach(renderer -> {
+            try {
+                ResourceLocation loc = renderer.getTextureLocation(null);
+                if (loc == null || loc.getPath().startsWith("textures/atlas/")) return;
+                textureColorCache.computeIfAbsent(loc, this::computeAverageColor);
+            } catch (Exception e) {
+                LOGGER.warn("fail preload: {}", e.toString());
             }
-            if (c==0) return null;
-            return new float[]{r/(float)c/255f, g/(float)c/255f, b/(float)c/255f};
-        } catch (Exception e) {
-            LOGGER.warn("Failed to load texture: {}", e.toString());
-            return null;
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ignored) { }
+        });
+    }
+
+    private float[] computeAverageColor(ResourceLocation loc) {
+        try (InputStream in = minecraft.getResourceManager().getResource(loc).get().open()) {
+            BufferedImage img = ImageIO.read(in);
+            long r=0, g=0, b=0, count=0;
+            for (int y = 0; y < img.getHeight(); y++) {
+                for (int x = 0; x < img.getWidth(); x++) {
+                    int argb = img.getRGB(x, y);
+                    if (((argb >>> 24) & 0xFF) < 16) continue;
+                    r += (argb >> 16) & 0xFF;
+                    g += (argb >> 8) & 0xFF;
+                    b += argb & 0xFF;
+                    count++;
+                }
+            }
+            if (count == 0) return new float[]{1f,1f,1f};
+            return new float[]{r / (float)(count * 255), g / (float)(count * 255), b / (float)(count * 255)};
+        } catch (IOException e) {
+            LOGGER.warn("Fail load texture {}: {}", loc, e);
+            return new float[]{1f,1f,1f};
+        }
+    }
+
+    private Map<Entity, float[]> computeEntityColors(List<Entity> entities) {
+        var map = new HashMap<Entity, float[]>();
+        for (Entity e : entities) {
+            try {
+                ResourceLocation loc = minecraft.getEntityRenderDispatcher()
+                                                 .getRenderer(e)
+                                                 .getTextureLocation(e);
+                float[] col = (loc != null)
+                    ? textureColorCache.getOrDefault(loc, new float[]{1f,1f,1f})
+                    : new float[]{1f,1f,1f};
+                map.put(e, col);
+            } catch (Exception ex) {
+                map.put(e, new float[]{1f,1f,1f});
             }
         }
+        return map;
     }
 
     private ChannelFloat32 createChannel(String name, List<Float> vals) {
