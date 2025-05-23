@@ -45,7 +45,7 @@
      --env="DISPLAY=$DISPLAY" \
      --env="QT_X11_NO_MITSHM=1" \
      --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-     --mount source=minecraft_ros2_gradle_cache, target=/root/.gradle \
+     --mount source=minecraft_ros2_gradle_cache,target=/root/.gradle \
      -v ~/.minecraft:/ws/minecraft_ros2/run \
      ghcr.io/minecraft-ros2/minecraft_ros2:latest \
      /bin/bash ./runClient.sh
