@@ -33,21 +33,37 @@ Docker provides a convenient way to try out the environment in this repository. 
    xhost +local:root
    ```
 
-2. **Start the Docker Container**
+2. **Make shared directory**
+
+   Run this step only once during the initial setup.
+   ```bash
+   docker volume create minecraft_ros2_gradle_cache
+   mkdir -p ~/.minecraft
+   ```
+
+3. **Start the Docker Container**
 
    ```bash
    docker run -it --rm \
      --env="DISPLAY=$DISPLAY" \
      --env="QT_X11_NO_MITSHM=1" \
      --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-     ghcr.io/minecraft-ros2/minecraft_ros2:latest
+     --mount source="$GRADLE_VOLUME",target=/root/.gradle \
+     -v ~/.minecraft:/ws/minecraft_ros2/run \
+     ghcr.io/minecraft-ros2/minecraft_ros2:latest \
+     /bin/bash ./runClient.sh
    ```
 
    * If you want to use the GPU, add `--gpus all` (requires NVIDIA Container Toolkit):
 
-3. **Verify Operation with Tools like `rviz2`**
-
+4. **Verify Operation with Tools like `rviz2`**
+   
    Once ROS 2 is running inside the container, you can start tools like `rviz2` from another terminal to visualize the data.
+
+5. **Restore permissions**
+   ```bash
+   xhost -local:root
+   ```
 ---
 ## Source Installation Guide
 
