@@ -30,24 +30,38 @@
    ```bash
    xhost +local:root
    ```
+2. **共有ディレクトリの作成**
 
-2. **Docker コンテナを起動**
+   この手順は初回セットアップ時に一度だけ実行してください。
+   ```bash
+   docker volume create minecraft_ros2_gradle_cache
+   mkdir -p ~/.minecraft
+   ```
+
+3. **Docker コンテナを起動**
 
    ```bash
    docker run -it --rm \
      --env="DISPLAY=$DISPLAY" \
      --env="QT_X11_NO_MITSHM=1" \
      --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-     ghcr.io/minecraft-ros2/minecraft_ros2:latest
+     --mount source="$GRADLE_VOLUME",target=/root/.gradle \
+     -v ~/.minecraft:/ws/minecraft_ros2/run \
+     ghcr.io/minecraft-ros2/minecraft_ros2:latest \
+     /bin/bash ./runClient.sh
    ```
 
    * GPU を使いたい場合は `--gpus all` を追加してください（NVIDIA Container Toolkit のインストールが必要です）:
 
 
-3. **`rviz2` などで動作を確認**
+4. **`rviz2` などで動作を確認**
 
    コンテナ内で ROS 2 が立ち上がった後、別端末で `rviz2` を起動することで可視化が可能です：
 
+5. 権限の復元
+   ```bash
+   xhost -local:root
+   ```
 
 ## ソースインストール手順
 
