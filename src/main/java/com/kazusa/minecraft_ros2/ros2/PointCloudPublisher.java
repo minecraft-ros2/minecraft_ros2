@@ -93,6 +93,11 @@ public class PointCloudPublisher extends BaseComposableNode {
 
     private void publishAsyncLidarScan() {
         if (minecraft.player == null || minecraft.level == null) return;
+
+        if (textureColorCache.isEmpty()) {
+            preloadAllEntityTextures();
+        }
+
         double px = minecraft.player.getX();
         double py = minecraft.player.getY() + minecraft.player.getEyeHeight();
         double pz = minecraft.player.getZ();
@@ -103,15 +108,15 @@ public class PointCloudPublisher extends BaseComposableNode {
         Entity player = minecraft.player;
 
         CompletableFuture.runAsync(() -> {
-            long start = System.nanoTime();
+            // long start = System.nanoTime();
 
             List<Entity> entities = gatherEntities(level, player, px, py, pz);
             Map<Entity, float[]> colors = computeEntityColors(entities);
             double cosP = Math.cos(pitchRad), sinP = Math.sin(pitchRad);
             double cosY = Math.cos(yawRad),   sinY = Math.sin(yawRad);
 
-            double elapsed_1 = (System.nanoTime() - start) / 1_000_000.0;
-            start = System.nanoTime();
+            // double elapsed_1 = (System.nanoTime() - start) / 1_000_000.0;
+            // start = System.nanoTime();
 
             List<ScanResult> results = performLidarScan(px, py, pz, cosP, sinP, cosY, sinY, level, entities, colors);
             if (results.isEmpty()) {
@@ -119,8 +124,8 @@ public class PointCloudPublisher extends BaseComposableNode {
                 return;
             }
 
-            double elapsed_2 = (System.nanoTime() - start) / 1_000_000.0;
-            start = System.nanoTime();
+            // double elapsed_2 = (System.nanoTime() - start) / 1_000_000.0;
+            // start = System.nanoTime();
 
             if (publishTF) {
                 try {
@@ -136,11 +141,9 @@ public class PointCloudPublisher extends BaseComposableNode {
                 LOGGER.error("Failed to publish point cloud", e);
             }
 
-            double elapsed_3 = (System.nanoTime() - start) / 1_000_000.0;
+            // double elapsed_3 = (System.nanoTime() - start) / 1_000_000.0;
 
-
-            double elapsed = (System.nanoTime() - start) / 1_000_000.0;
-            LOGGER.info("Color: {} ms, LiDAR: {} ms, ROS2: {} ms", String.format("%.2f", elapsed_1), String.format("%.2f", elapsed_2), String.format("%.2f", elapsed_3));
+            // LOGGER.info("Color: {} ms, LiDAR: {} ms, ROS2: {} ms", String.format("%.2f", elapsed_1), String.format("%.2f", elapsed_2), String.format("%.2f", elapsed_3));
         });
     }
 
