@@ -28,3 +28,8 @@ jobs:
       - name: build mod
         run: |
           ./gradlew prepareRunClientCompile
+      
+      - name: remove big files
+        run: |
+          rm -rf /root/.gradle/daemon
+          
