@@ -35,8 +35,7 @@ jobs:
 
       - name: debug log
         run: |
-          ls -la /root/.gradle
-          ls -la /ws/minecraft_ros2/run
+          pwd
 
       - name: build mod
         run: |
