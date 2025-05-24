@@ -107,7 +107,7 @@ rviz2 -d minecraft.rviz
 
 「minecraft\_ros2」で提供されているLiDARセンサーは、防具のヘルメットとして実装されています。クリエイティブモードでは、「戦闘」タブの一番最後に追加されており、プレイヤーがこれを装備することで、点群データのパブリッシュが自動的に開始されます。
 
-![lidar_2](/images/lidar_1.png)
+![lidar_2](/images/lidar_2.png)
 
 ![lidar_1](/images/lidar_1.png)
 
