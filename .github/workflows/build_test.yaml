@@ -19,18 +19,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 固定キーで Gradle キャッシュ
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
           path: /root/.gradle
           key: gradle-cache
 
-      # 固定キーで run ディレクトリキャッシュ
       - name: Cache Minecraft ROS2 run directory
         uses: actions/cache@v4
         with:
-          path: /__w/minecraft_ros2/minecraft_ros2/run
+          path: ${{ github.workspace }}/minecraft_ros2/run
           key: run-dir-cache
 
       - name: build mod
