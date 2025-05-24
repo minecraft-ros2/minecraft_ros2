@@ -2,7 +2,10 @@ package com.kazusa.minecraft_ros2;
 
 import com.kazusa.minecraft_ros2.config.Config;
 import com.kazusa.minecraft_ros2.ros2.ROS2Manager;
+import com.kazusa.minecraft_ros2.ros2.ModArmorMaterials;
+import com.kazusa.minecraft_ros2.ros2.ModItems;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -35,6 +38,9 @@ public class minecraft_ros2 {
 
         // Register this mod to the MinecraftForge event bus
         MinecraftForge.EVENT_BUS.register(this);
+
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        ModItems.register(bus);
 
         LOGGER.info("minecraft_ros2 mod initialized");
     }
