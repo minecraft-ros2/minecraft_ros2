@@ -28,9 +28,15 @@ jobs:
       - name: Cache Minecraft ROS2 run directory
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/minecraft_ros2/run
+          path: run
           key: run-dir-cache
 
       - name: build mod
         run: |
           ./gradlew prepareRunClientCompile
+
+      - name: debug info
+        run: |
+          pwd
+          ls -la
+          ls -la run
