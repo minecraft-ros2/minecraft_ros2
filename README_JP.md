@@ -120,3 +120,7 @@ rviz2 -d minecraft.rviz
 * [kazu-321](https://github.com/kazu-321)
 
 ---
+
+Velodyne VLP-16 is a registered trademark of Ouster Lidar, Inc
+
+Hesai and XT-32 is a registered trademark of Hesai Technology, Inc
