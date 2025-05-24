@@ -19,8 +19,6 @@ services:
               count: all
 
   rviz:
-    depends_on:
-      - minecraft
     image: minecraft-ros2/minecraft-ros2-local-build
     pull_policy: never
     command: ./runRviz.sh
