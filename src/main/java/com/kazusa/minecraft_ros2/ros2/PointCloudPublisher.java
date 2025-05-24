@@ -1,11 +1,10 @@
 package com.kazusa.minecraft_ros2.ros2;
 
-import com.kazusa.minecraft_ros2.ros2.Point3D;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ClipContext.Block;
@@ -14,10 +13,10 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.ros2.rcljava.Time;
 import org.ros2.rcljava.node.BaseComposableNode;
 import org.ros2.rcljava.publisher.Publisher;
-import org.ros2.rcljava.timer.WallTimer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import geometry_msgs.msg.Point32;
@@ -36,28 +35,32 @@ import java.nio.ByteOrder;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
 
 public class PointCloudPublisher extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(PointCloudPublisher.class);
 
     private final Publisher<PointCloud2> publisher;
     private final Publisher<TFMessage> tfPublisher;
-    private final WallTimer timer;
     private final Minecraft minecraft;
     private final List<Point3D> baseVector = new ArrayList<>();
     private PointCloud2 msg;
     private TFMessage tfMsg;
+    private String lidarName;
     private final Map<ResourceLocation, float[]> textureColorCache = new HashMap<>();
+    private final AtomicBoolean publishPC2 = new AtomicBoolean(false);
 
     // Parameters
-    private final double horizontalResDeg = 0.18;
-    private final double verticalResDeg   = 1.0;
-    private final double verticalFovDeg   = 31.0;
-    private final double minDistance      = 0.05;
-    private final double maxDistance      = 120.0;
+    private double horizontalResDeg = 0.18;
+    private double verticalResDeg   = 1.0;
+    private double verticalFovDeg   = 31.0;
+    private double minDistance      = 0.05;
+    private double maxDistance      = 120.0;
 
     private final boolean publishTF       = false;
+
 
     public PointCloudPublisher() {
         super("minecraft_pointcloud_publisher");
@@ -66,11 +69,11 @@ public class PointCloudPublisher extends BaseComposableNode {
         minecraft = Minecraft.getInstance();
         initBaseVector();
         preloadAllEntityTextures();
-        timer = node.createWallTimer(100, TimeUnit.MILLISECONDS, this::publishAsyncLidarScan);
-        LOGGER.info("Initialized with horizRes={}° vertRes={}° vertFOV={}°", horizontalResDeg, verticalResDeg, verticalFovDeg);
+        node.createWallTimer(100, TimeUnit.MILLISECONDS, this::publishAsyncLidarScan);
     }
 
     private void initBaseVector() {
+        baseVector.clear();
         int vertSteps = (int)(verticalFovDeg / verticalResDeg) + 1;
         int horizSteps = (int)(360.0 / horizontalResDeg) + 1;
         double minPitch = Math.toRadians(-verticalFovDeg / 2);
@@ -87,12 +90,66 @@ public class PointCloudPublisher extends BaseComposableNode {
                 ));
             }
         }
+        LOGGER.info("Initialized with horizRes={}° vertRes={}° vertFOV={}°", horizontalResDeg, verticalResDeg, verticalFovDeg);
+    }
+
+    private void playerHaveLiDAR() {
+        ItemStack helmet = minecraft.player.getItemBySlot(EquipmentSlot.HEAD);
+        ResourceLocation key = ForgeRegistries.ITEMS.getKey(helmet.getItem());
+        String objectKeyName = key.toString();
+        boolean isRos2 = objectKeyName.contains("minecraft_ros2");
+
+        if (isRos2) {
+            if (lidarName == null || !lidarName.equals(objectKeyName)) {
+                lidarName = objectKeyName;
+                setLiDARParameter(lidarName);
+                initBaseVector();
+            }
+            publishPC2.set(true);
+
+        } else {
+            if (publishPC2.get()) {
+                baseVector.clear();
+            }
+            lidarName = null;
+            publishPC2.set(false);
+        }
+    }
+
+    private void setLiDARParameter(String name) {
+        switch (name) {
+            case "minecraft_ros2:velodyne_vlp16":
+                horizontalResDeg = 0.2;
+                verticalResDeg   = 2.0;
+                verticalFovDeg   = 31.0;
+                minDistance      = 0.1;
+                maxDistance      = 100.0;
+                break;
+            case "minecraft_ros2:hesai_xt32":
+                horizontalResDeg = 0.18;
+                verticalResDeg   = 1.0;
+                verticalFovDeg   = 31.0;
+                minDistance      = 0.05;
+                maxDistance      = 120.0;
+                break;
+            default:
+                horizontalResDeg = 1.0;
+                verticalResDeg   = 2.0;
+                verticalFovDeg   = 31.0;
+                minDistance      = 0.1;
+                maxDistance      = 10.0;
+                break;
+        }
+        LOGGER.info("LiDAR '{}' parameters → horiz={}° vert={}° FOV={}° dist=[{},{}]", 
+                    name, horizontalResDeg, verticalResDeg, verticalFovDeg, minDistance, maxDistance);
     }
 
     private static record ScanResult(Point32 pt, float r, float g, float b) {}
 
     private void publishAsyncLidarScan() {
         if (minecraft.player == null || minecraft.level == null) return;
+        playerHaveLiDAR();
+        if (publishPC2.get() == false) return;
 
         if (textureColorCache.isEmpty()) {
             preloadAllEntityTextures();

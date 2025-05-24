@@ -122,3 +122,8 @@ Contributions are welcome! Feel free to open issues or pull requests.
 * [kazu-321](https://github.com/kazu-321)
 
 ---
+
+
+Velodyne VLP-16 is a registered trademark of Ouster Lidar, Inc
+
+Hesai and XT-32 is a registered trademark of Hesai Technology, Inc
