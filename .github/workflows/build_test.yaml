@@ -36,3 +36,15 @@ jobs:
       - name: build mod
         run: |
           ./gradlew prepareRunClientCompile
+
+      - name: Save Gradle Cache
+        uses: actions/cache/save@v4
+        with:
+          path: /root/.gradle
+          key: gradle-cache
+          
+      - name: Save Run Directory Cache
+        uses: actions/cache/save@v4
+        with:
+          path: /ws/minecraft_ros2/run
+          key: run-dir-cache
