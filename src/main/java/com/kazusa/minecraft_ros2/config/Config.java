@@ -17,6 +17,7 @@ public class Config {
         public final ForgeConfigSpec.IntValue maxSpeed;
         public final ForgeConfigSpec.BooleanValue enableLogging;
         public final ForgeConfigSpec.ConfigValue<String> topicName;
+        public final ForgeConfigSpec.BooleanValue enableDebugDataStreaming;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
             builder.comment("ROS2 Minecraft Mod Configuration").push("general");
@@ -32,6 +33,10 @@ public class Config {
             topicName = builder
                     .comment("ROS2 topic name to subscribe for Twist messages")
                     .define("topicName", "cmd_vel");
+                    
+            enableDebugDataStreaming = builder
+                    .comment("Enable or disable the debug data stream for additional information")
+                    .define("enableDebugDataStreaming", false);
 
             builder.pop();
         }
