@@ -1,0 +1,5 @@
+{
+  "item.minecraft_ros2.velodyne_vlp16": "Velodyne VLP16 LiDAR",
+  "item.minecraft_ros2.hesai_xt32":      "Hesai XT32 LiDAR",
+  "itemGroup.minecraft_ros2":            "ROS2 Mod"
+}
