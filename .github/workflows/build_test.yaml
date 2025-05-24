@@ -30,7 +30,7 @@ jobs:
       - name: Cache Minecraft ROS2 run directory
         uses: actions/cache@v4
         with:
-          path: ./run
+          path: /__w/minecraft_ros2/minecraft_ros2/run
           key: run-dir-cache
 
       - name: build mod
