@@ -1,0 +1,35 @@
+services:
+  minecraft:
+    build: .
+    image: minecraft-ros2/minecraft-ros2-local-build
+    pull_policy: never
+    command: ./runClient.sh
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./.cache/minecraft:/ws/minecraft_ros2/run
+      - ./.cache/gradle:/root/.gradle
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              count: all
+
+  rviz:
+    image: minecraft-ros2/minecraft-ros2-local-build
+    pull_policy: never
+    command: ./runRviz.sh
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              count: all

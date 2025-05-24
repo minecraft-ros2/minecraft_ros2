@@ -33,34 +33,22 @@ Docker provides a convenient way to try out the environment in this repository. 
    xhost +local:root
    ```
 
-2. **Make shared directory**
-
-   Run this step only once during the initial setup.
-   ```bash
-   docker volume create minecraft_ros2_gradle_cache
-   mkdir -p ~/.minecraft
-   ```
-
-3. **Start the Docker Container**
+2. **Clone this repository**
 
    ```bash
-   docker run -it --rm \
-     --env="DISPLAY=$DISPLAY" \
-     --env="QT_X11_NO_MITSHM=1" \
-     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-     --mount source=minecraft_ros2_gradle_cache,target=/root/.gradle \
-     -v ~/.minecraft:/ws/minecraft_ros2/run \
-     ghcr.io/minecraft-ros2/minecraft_ros2:latest \
-     /bin/bash ./runClient.sh
+   git clone https://github.com/minecraft-ros2/minecraft_ros2.git
+   cd minecraft_ros2
    ```
 
-   * If you want to use the GPU, add `--gpus all` (requires NVIDIA Container Toolkit):
+3. **Start Docker Containers**
 
-4. **Verify Operation with Tools like `rviz2`**
-   
-   Once ROS 2 is running inside the container, you can start tools like `rviz2` from another terminal to visualize the data.
+   ```bash
+   docker compose up
+   ```
 
-5. **Restore permissions**
+   Running this command will start both Minecraft and RViz. To learn how to visualize point clouds in RViz, check out the [How to Use the Sensor](#how-to-use-the-sensor) section.
+
+4. **Restore permissions**
    ```bash
    xhost -local:root
    ```

@@ -30,35 +30,22 @@
    ```bash
    xhost +local:root
    ```
-2. **共有ディレクトリの作成**
+2. **リポジトリのクローン**
 
-   この手順は初回セットアップ時に一度だけ実行してください。
    ```bash
-   docker volume create minecraft_ros2_gradle_cache
-   mkdir -p ~/.minecraft
+   git clone https://github.com/minecraft-ros2/minecraft_ros2.git
+   cd minecraft_ros2
    ```
 
 3. **Docker コンテナを起動**
 
    ```bash
-   docker run -it --rm \
-     --env="DISPLAY=$DISPLAY" \
-     --env="QT_X11_NO_MITSHM=1" \
-     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-     --mount source=minecraft_ros2_gradle_cache,target=/root/.gradle \
-     -v ~/.minecraft:/ws/minecraft_ros2/run \
-     ghcr.io/minecraft-ros2/minecraft_ros2:latest \
-     /bin/bash ./runClient.sh
+   docker compose up
    ```
 
-   * GPU を使いたい場合は `--gpus all` を追加してください（NVIDIA Container Toolkit のインストールが必要です）:
+   このコマンドを実行すると、MinecraftとRVizが同時に起動します。RVizで点群を表示する方法については、[センサーの使い方](#センサーの使い方)をご覧ください。
 
-
-4. **`rviz2` などで動作を確認**
-
-   コンテナ内で ROS 2 が立ち上がった後、別端末で `rviz2` を起動することで可視化が可能です：
-
-5. 権限の復元
+4. 権限の復元
    ```bash
    xhost -local:root
    ```
