@@ -33,6 +33,11 @@ jobs:
           path: /ws/minecraft_ros2/run
           key: run-dir-cache
 
+      - name: debug log
+        run: |
+          ls -la /root/.gradle
+          ls -la /ws/minecraft_ros2/run
+
       - name: build mod
         run: |
           ./gradlew prepareRunClientCompile
@@ -42,7 +47,7 @@ jobs:
         with:
           path: /root/.gradle
           key: gradle-cache
-          
+
       - name: Save Run Directory Cache
         uses: actions/cache/save@v4
         with:
