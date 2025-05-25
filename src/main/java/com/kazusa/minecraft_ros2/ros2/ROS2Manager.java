@@ -1,5 +1,6 @@
 package com.kazusa.minecraft_ros2.ros2;
 
+import com.kazusa.minecraft_ros2.config.Config;
 import org.ros2.rcljava.RCLJava;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,8 +8,6 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.lang.reflect.Field;
-import java.util.Arrays;
 
 /**
  * Manages ROS2 initialization, execution, and shutdown
@@ -22,6 +21,8 @@ public class ROS2Manager {
     private TwistSubscriber twistSubscriber;
     private ImagePublisher imagePublisher;
     private PointCloudPublisher pointCloudPublisher;
+    private IMUPublisher imuPublisher;
+    private LivingEntitiesPublisher livingEntitiesPublisher;
     
     private ROS2Manager() {
         // Private constructor for singleton
@@ -61,6 +62,15 @@ public class ROS2Manager {
                 twistSubscriber = new TwistSubscriber();
                 imagePublisher = new ImagePublisher();
                 pointCloudPublisher = new PointCloudPublisher();
+                imuPublisher = new IMUPublisher();
+
+                if (Config.COMMON.enableDebugDataStreaming.get()) {
+                    LOGGER.info("Debug data stream enabled");
+                    livingEntitiesPublisher = new LivingEntitiesPublisher();
+                } else {
+                    LOGGER.info("Debug data stream disabled");
+                }
+
                 
                 // Create and start executor thread for ROS2 spin
                 executorService = Executors.newSingleThreadExecutor(r -> {
@@ -76,7 +86,13 @@ public class ROS2Manager {
                             RCLJava.spinSome(twistSubscriber);
                             RCLJava.spinSome(imagePublisher);
                             RCLJava.spinSome(pointCloudPublisher);
+                            RCLJava.spinSome(imuPublisher);
                             //captureAndPublishImage
+                            
+                            if (livingEntitiesPublisher != null) {
+                                RCLJava.spinSome(livingEntitiesPublisher);
+                            }
+                            
                             Thread.sleep(5); // Don't hog CPU
                         }
                     } catch (InterruptedException e) {

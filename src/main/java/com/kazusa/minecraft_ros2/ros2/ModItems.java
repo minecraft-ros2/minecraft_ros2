@@ -22,13 +22,33 @@ public class ModItems {
                     new Item.Properties()
             )
     );
-
     public static final RegistryObject<Item> HESAI_XT32 = ITEMS.register("hesai_xt32",
             () -> new LidarItem(
                     Holder.direct(ModArmorMaterials.MYSTIC_MATERIAL),
                     ArmorItem.Type.HELMET,
                     new Item.Properties()
             )
+    );
+    public static final RegistryObject<Item> HESAI_FT120 = ITEMS.register("hesai_ft120",
+        () -> new LidarItem(
+            Holder.direct(ModArmorMaterials.MYSTIC_MATERIAL),  
+            ArmorItem.Type.HELMET,
+            new Item.Properties()
+        )
+    );
+    public static final RegistryObject<Item> RS_LIDAR_M1 = ITEMS.register("rs_lidar_m1",
+        () -> new LidarItem(
+            Holder.direct(ModArmorMaterials.MYSTIC_MATERIAL),  
+            ArmorItem.Type.HELMET,
+            new Item.Properties()
+        )
+    );
+    public static final RegistryObject<Item> UTM_30LN = ITEMS.register("utm_30ln",
+        () -> new LidarItem(
+            Holder.direct(ModArmorMaterials.MYSTIC_MATERIAL),  
+            ArmorItem.Type.HELMET,
+            new Item.Properties()
+        )
     );
 
     public static void register(IEventBus bus) {

@@ -77,7 +77,8 @@ def ros2Messages =[
     "std_msgs",
     "builtin_interfaces",
     "sensor_msgs",
-    "tf2_msgs"
+    "tf2_msgs",
+    "minecraft_msgs"
 ]
 
 // JARファイルパスを動的に収集

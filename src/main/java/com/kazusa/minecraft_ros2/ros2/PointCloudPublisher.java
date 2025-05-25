@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import geometry_msgs.msg.Point32;
 import geometry_msgs.msg.TransformStamped;
-import sensor_msgs.msg.ChannelFloat32;
 import sensor_msgs.msg.PointField;
 import sensor_msgs.msg.PointCloud2;
 import std_msgs.msg.Header;
@@ -49,10 +48,12 @@ public class PointCloudPublisher extends BaseComposableNode {
     private PointCloud2 msg;
     private TFMessage tfMsg;
     private String lidarName;
+    double halfHoriz;
     private final Map<ResourceLocation, float[]> textureColorCache = new HashMap<>();
     private final AtomicBoolean publishPC2 = new AtomicBoolean(false);
 
     // Parameters
+    private double horizontalFovDeg = 360.0;
     private double horizontalResDeg = 0.18;
     private double verticalResDeg   = 1.0;
     private double verticalFovDeg   = 31.0;
@@ -74,26 +75,45 @@ public class PointCloudPublisher extends BaseComposableNode {
 
     private void initBaseVector() {
         baseVector.clear();
-        int vertSteps = (int)(verticalFovDeg / verticalResDeg) + 1;
         int horizSteps = (int)(360.0 / horizontalResDeg) + 1;
-        double minPitch = Math.toRadians(-verticalFovDeg / 2);
-        double maxPitch = Math.toRadians(verticalFovDeg / 2);
 
-        for (int iv = 0; iv < vertSteps; iv++) {
-            double pitch = minPitch + (maxPitch - minPitch) * iv / (vertSteps - 1);
+        if (verticalFovDeg < 0.001) {
             for (int ih = 0; ih < horizSteps; ih++) {
                 double yaw = Math.toRadians(-180 + ih * horizontalResDeg);
                 baseVector.add(new Point3D(
-                    Math.cos(pitch) * Math.sin(yaw),
-                    Math.sin(pitch),
-                    Math.cos(pitch) * Math.cos(yaw)
+                    Math.sin(yaw),  // x
+                    0.0,          // y = 0
+                    Math.cos(yaw)   // z
                 ));
             }
+        } else {
+            int vertSteps = (int)(verticalFovDeg / verticalResDeg) + 1;
+            double minPitch = Math.toRadians(-verticalFovDeg / 2);
+            double maxPitch = Math.toRadians(verticalFovDeg / 2);
+
+            for (int iv = 0; iv < vertSteps; iv++) {
+                double pitch = minPitch + (maxPitch - minPitch) * iv / (vertSteps - 1);
+                for (int ih = 0; ih < horizSteps; ih++) {
+                    double yaw = Math.toRadians(-180 + ih * horizontalResDeg);
+                    baseVector.add(new Point3D(
+                        Math.cos(pitch) * Math.sin(yaw),  // x
+                        Math.sin(pitch),                  // y
+                        Math.cos(pitch) * Math.cos(yaw)   // z
+                    ));
+                }
+            }
         }
-        LOGGER.info("Initialized with horizRes={}° vertRes={}° vertFOV={}°", horizontalResDeg, verticalResDeg, verticalFovDeg);
+
+        LOGGER.info("Initialized in {}-mode: horizRes={}° vertRes={}° vertFOV={}°",
+            (verticalFovDeg < 0.001) ? "2D" : "3D",
+            horizontalResDeg,
+            verticalResDeg,
+            verticalFovDeg
+        );
     }
 
     private void playerHaveLiDAR() {
+        @SuppressWarnings("null")
         ItemStack helmet = minecraft.player.getItemBySlot(EquipmentSlot.HEAD);
         ResourceLocation key = ForgeRegistries.ITEMS.getKey(helmet.getItem());
         String objectKeyName = key.toString();
@@ -119,27 +139,55 @@ public class PointCloudPublisher extends BaseComposableNode {
     private void setLiDARParameter(String name) {
         switch (name) {
             case "minecraft_ros2:velodyne_vlp16":
+                horizontalFovDeg = 360.0;
                 horizontalResDeg = 0.2;
-                verticalResDeg   = 2.0;
                 verticalFovDeg   = 31.0;
+                verticalResDeg   = 2.0;
                 minDistance      = 0.1;
                 maxDistance      = 100.0;
                 break;
             case "minecraft_ros2:hesai_xt32":
+                horizontalFovDeg = 360.0;
                 horizontalResDeg = 0.18;
-                verticalResDeg   = 1.0;
                 verticalFovDeg   = 31.0;
+                verticalResDeg   = 1.0;
                 minDistance      = 0.05;
                 maxDistance      = 120.0;
                 break;
+            case "minecraft_ros2:hesai_ft120":
+                horizontalFovDeg = 100.0;
+                horizontalResDeg = 0.625;
+                verticalFovDeg   = 75.0;
+                verticalResDeg   = 0.625;
+                minDistance      = 0.1;
+                maxDistance      = 22.0;
+                break;
+            case "minecraft_ros2:rs_lidar_m1":
+                horizontalFovDeg = 120.0;
+                horizontalResDeg = 0.2;
+                verticalFovDeg   = 25.0;
+                verticalResDeg   = 0.2;
+                minDistance      = 0.05;
+                maxDistance      = 120.0;
+                break;
+            case "minecraft_ros2:utm_30ln":
+                horizontalFovDeg = 270.0;
+                horizontalResDeg = 0.25;
+                verticalFovDeg   = 0.0;
+                verticalResDeg   = 1.0;
+                minDistance      = 0.05;
+                maxDistance      = 30.0;
+                break;
             default:
+                horizontalFovDeg = 360.0;
                 horizontalResDeg = 1.0;
-                verticalResDeg   = 2.0;
                 verticalFovDeg   = 31.0;
+                verticalResDeg   = 2.0;
                 minDistance      = 0.1;
                 maxDistance      = 10.0;
                 break;
         }
+        halfHoriz = Math.toRadians(horizontalFovDeg / 2.0);
         LOGGER.info("LiDAR '{}' parameters → horiz={}° vert={}° FOV={}° dist=[{},{}]", 
                     name, horizontalResDeg, verticalResDeg, verticalFovDeg, minDistance, maxDistance);
     }
@@ -147,7 +195,11 @@ public class PointCloudPublisher extends BaseComposableNode {
     private static record ScanResult(Point32 pt, float r, float g, float b) {}
 
     private void publishAsyncLidarScan() {
-        if (minecraft.player == null || minecraft.level == null) return;
+        Minecraft mc = minecraft;
+        Entity player = mc.player;
+        Level level = mc.level;
+
+        if (player == null || level == null) return;
         playerHaveLiDAR();
         if (publishPC2.get() == false) return;
 
@@ -155,25 +207,22 @@ public class PointCloudPublisher extends BaseComposableNode {
             preloadAllEntityTextures();
         }
 
-        double px = minecraft.player.getX();
-        double py = minecraft.player.getY() + minecraft.player.getEyeHeight();
-        double pz = minecraft.player.getZ();
-        double yawRad   = Math.toRadians(minecraft.player.getYRot());
+        double px = player.getX();
+        double py = player.getY() + player.getEyeHeight();
+        double pz = player.getZ();
+        double yawRad   = Math.toRadians(player.getYRot());
         double pitchRad = 0.0;
 
-        Level level = minecraft.level;
-        Entity player = minecraft.player;
-
         CompletableFuture.runAsync(() -> {
-            // long start = System.nanoTime();
+            long start = System.nanoTime();
 
             List<Entity> entities = gatherEntities(level, player, px, py, pz);
             Map<Entity, float[]> colors = computeEntityColors(entities);
             double cosP = Math.cos(pitchRad), sinP = Math.sin(pitchRad);
             double cosY = Math.cos(yawRad),   sinY = Math.sin(yawRad);
 
-            // double elapsed_1 = (System.nanoTime() - start) / 1_000_000.0;
-            // start = System.nanoTime();
+            double elapsed_1 = (System.nanoTime() - start) / 1_000_000.0;
+            start = System.nanoTime();
 
             List<ScanResult> results = performLidarScan(px, py, pz, cosP, sinP, cosY, sinY, level, entities, colors);
             if (results.isEmpty()) {
@@ -181,8 +230,8 @@ public class PointCloudPublisher extends BaseComposableNode {
                 return;
             }
 
-            // double elapsed_2 = (System.nanoTime() - start) / 1_000_000.0;
-            // start = System.nanoTime();
+            double elapsed_2 = (System.nanoTime() - start) / 1_000_000.0;
+            start = System.nanoTime();
 
             if (publishTF) {
                 try {
@@ -198,9 +247,9 @@ public class PointCloudPublisher extends BaseComposableNode {
                 LOGGER.error("Failed to publish point cloud", e);
             }
 
-            // double elapsed_3 = (System.nanoTime() - start) / 1_000_000.0;
+            double elapsed_3 = (System.nanoTime() - start) / 1_000_000.0;
 
-            // LOGGER.info("Color: {} ms, LiDAR: {} ms, ROS2: {} ms", String.format("%.2f", elapsed_1), String.format("%.2f", elapsed_2), String.format("%.2f", elapsed_3));
+            LOGGER.info("Color: {} ms, LiDAR: {} ms, ROS2: {} ms", String.format("%.2f", elapsed_1), String.format("%.2f", elapsed_2), String.format("%.2f", elapsed_3));
         });
     }
 
@@ -236,6 +285,7 @@ public class PointCloudPublisher extends BaseComposableNode {
             Vec3 end = start.add(dir.x * maxDistance,
                                 dir.y * maxDistance,
                                 dir.z * maxDistance);
+            @SuppressWarnings("null")
             BlockHitResult bhr =
                 level.clip(new ClipContext(start, end, Block.OUTLINE, Fluid.NONE, minecraft.player));
             String blockName = level.getBlockState(bhr.getBlockPos()).getBlock().toString().toLowerCase();
@@ -246,6 +296,10 @@ public class PointCloudPublisher extends BaseComposableNode {
 
             Point32 pt = rotateToSensorFrame(hd.location, px, py, pz, cosP, sinP, cosY, sinY);
             float[] col = hd.entity != null ? colors.get(hd.entity) : hd.blockColor;
+            double azimuth = Math.atan2(pt.getY(), pt.getX());
+            if (azimuth < -halfHoriz || azimuth > halfHoriz) {
+                return null;
+            }
             return new ScanResult(pt, col[0], col[1], col[2]);
         } catch (Exception e) {
             LOGGER.error("Error scanning direction {}", dir, e);
@@ -411,6 +465,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         var dispatcher = minecraft.getEntityRenderDispatcher();
         dispatcher.renderers.values().forEach(renderer -> {
             try {
+                @SuppressWarnings("null")
                 ResourceLocation loc = renderer.getTextureLocation(null);
                 if (loc == null || loc.getPath().startsWith("textures/atlas/")) return;
                 textureColorCache.computeIfAbsent(loc, this::computeAverageColor);
@@ -458,13 +513,6 @@ public class PointCloudPublisher extends BaseComposableNode {
             }
         }
         return map;
-    }
-
-    private ChannelFloat32 createChannel(String name, List<Float> vals) {
-        ChannelFloat32 ch = new ChannelFloat32();
-        ch.setName(name);
-        ch.setValues(vals);
-        return ch;
     }
 
     private PointField createField(String name, int offset, byte datatype, int count) {
