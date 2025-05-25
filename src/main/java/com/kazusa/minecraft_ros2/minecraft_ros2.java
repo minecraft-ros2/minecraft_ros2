@@ -1,8 +1,9 @@
 package com.kazusa.minecraft_ros2;
 
 import com.kazusa.minecraft_ros2.config.Config;
-import com.kazusa.minecraft_ros2.ros2.ROS2Manager;
+import com.kazusa.minecraft_ros2.graphics.ModelHandler;
 import com.kazusa.minecraft_ros2.ros2.ModItems;
+import com.kazusa.minecraft_ros2.ros2.ROS2Manager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -14,7 +15,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 
 @Mod(minecraft_ros2.MOD_ID)
@@ -38,6 +38,7 @@ public class minecraft_ros2 {
 
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         ModItems.register(bus);
+        ModelHandler.register(bus);
 
         LOGGER.info("minecraft_ros2 mod initialized");
     }
@@ -46,7 +47,6 @@ public class minecraft_ros2 {
         LOGGER.info("minecraft_ros2 common setup");
         // Performed for both client and server setup
     }
-
 
 
     private void clientSetup(final FMLClientSetupEvent event) {

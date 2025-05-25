@@ -3,6 +3,7 @@ package com.kazusa.minecraft_ros2.graphics;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class ModelHandler {
@@ -12,5 +13,9 @@ public class ModelHandler {
     @SubscribeEvent
     public void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(LIDAR_LAYER, LidarModel::createBodyLayer);
+    }
+
+    public static void register(IEventBus bus) {
+        bus.register(new ModelHandler());
     }
 }
