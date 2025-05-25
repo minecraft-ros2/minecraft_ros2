@@ -72,6 +72,58 @@ public class SpawnEntityService  extends BaseComposableNode {
             LOGGER.error("Invalid request: " + request);
             Result errorResult = new Result();
             errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setErrorMessage("Invalid request: modelName or modelUri is empty");
+            response.setResult(errorResult);
+            return;
+        }
+
+        if (modelUri.startsWith("file://")) {
+            modelUri = modelUri.replace("file://", ""); // file:// プレフィックスを削除
+        }
+
+        if (modelUri.startsWith("http://") || modelUri.startsWith("https://")) {
+            LOGGER.error("Remote URIs are not supported: " + modelUri);
+            Result errorResult = new Result();
+            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setErrorMessage("Remote URIs are not supported: " + modelUri);
+            response.setResult(errorResult);
+            return;
+        }
+
+        if (!modelUri.endsWith(".geo.json")) {
+            LOGGER.error("Invalid model URI, must end with .geo.json: " + modelUri);
+            Result errorResult = new Result();
+            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setErrorMessage("Invalid model URI, must end with .geo.json: " + modelUri);
+            response.setResult(errorResult);
+            return;
+        }
+
+        // jsonファイルの中身が有効かチェック
+        Path jsonPath = Paths.get(modelUri);
+        if (!Files.exists(jsonPath)) {
+            LOGGER.error("Model URI does not exist: " + modelUri);
+            Result errorResult = new Result();
+            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setErrorMessage("Model URI does not exist: " + modelUri);
+            response.setResult(errorResult);
+            return;
+        }
+        try {
+            String content = Files.readString(jsonPath);
+            if (!content.contains("\"format_version\"") || !content.contains("\"minecraft:geometry\"")) {
+                LOGGER.error("Invalid geometry JSON format: " + modelUri);
+                Result errorResult = new Result();
+                errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+                errorResult.setErrorMessage("Invalid geometry JSON format: " + modelUri);
+                response.setResult(errorResult);
+                return;
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to read model URI: " + modelUri, e);
+            Result errorResult = new Result();
+            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setErrorMessage("Failed to read model URI: " + modelUri);
             response.setResult(errorResult);
             return;
         }
@@ -83,6 +135,7 @@ public class SpawnEntityService  extends BaseComposableNode {
                 LOGGER.error("Maximum model number reached, overwriting existing models.");
                 Result errorResult = new Result();
                 errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+                errorResult.setErrorMessage("Maximum model number reached, overwriting existing models.");
                 response.setResult(errorResult);
                 return;
             }
