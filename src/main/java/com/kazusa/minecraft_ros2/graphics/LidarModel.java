@@ -17,17 +17,18 @@ public class LidarModel extends HumanoidModel<LivingEntity> {
 
     public LidarModel(ModelPart part) {
         super(part);
-        this.lidar = part.getChild(LIDAR);
+        this.lidar = part.getChild("head").getChild(LIDAR);
     }
 
     @Override
     protected @NotNull Iterable<ModelPart> headParts() {
+        this.lidar.copyFrom(this.head);
+        this.lidar.x += 1.0F; // Adjust the X position of the lidar
         return ImmutableList.of();
     }
 
     @Override
     protected @NotNull Iterable<ModelPart> bodyParts() {
-        this.lidar.copyFrom(this.body);
         ImmutableList.Builder<ModelPart> parts = ImmutableList.builder();
 
         parts.add(
@@ -42,8 +43,8 @@ public class LidarModel extends HumanoidModel<LivingEntity> {
     }
 
     public static LayerDefinition createBodyLayer() {
-        var mesh = HumanoidModel.createMesh(new CubeDeformation(1.0F), 0F);
-        var root = mesh.getRoot();
+        var mesh = HumanoidModel.createMesh(new CubeDeformation(1.5F), 0F);
+        var root = mesh.getRoot().getChild("head");
 
         root.addOrReplaceChild(LIDAR, CubeListBuilder.create()
                         .texOffs(36, 48).addBox(4.0F, -10.0F, -3.0F, 1.0F, 10.0F, 2.0F, new CubeDeformation(0.0F))
@@ -59,7 +60,7 @@ public class LidarModel extends HumanoidModel<LivingEntity> {
                         .texOffs(0, 0).addBox(-5.0F, -10.0F, -4.0F, 9.0F, 10.0F, 9.0F, new CubeDeformation(0.0F))
                         .texOffs(22, 19).addBox(-7.0F, -10.0F, -3.0F, 1.0F, 10.0F, 8.0F, new CubeDeformation(0.0F))
                         .texOffs(40, 11).addBox(-8.0F, -10.0F, -1.0F, 1.0F, 10.0F, 4.0F, new CubeDeformation(0.0F)),
-                PartPose.offset(10.0F, 24.0F, 0.0F));
+                PartPose.offset(0.0F, 0.0F, 0.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }
