@@ -141,40 +141,48 @@ public class PointCloudPublisher extends BaseComposableNode {
             case "minecraft_ros2:velodyne_vlp16":
                 horizontalFovDeg = 360.0;
                 horizontalResDeg = 0.2;
-                verticalResDeg   = 2.0;
                 verticalFovDeg   = 31.0;
+                verticalResDeg   = 2.0;
                 minDistance      = 0.1;
                 maxDistance      = 100.0;
                 break;
             case "minecraft_ros2:hesai_xt32":
                 horizontalFovDeg = 360.0;
                 horizontalResDeg = 0.18;
-                verticalResDeg   = 1.0;
                 verticalFovDeg   = 31.0;
+                verticalResDeg   = 1.0;
                 minDistance      = 0.05;
                 maxDistance      = 120.0;
+                break;
+            case "minecraft_ros2:hesai_ft120":
+                horizontalFovDeg = 100.0;
+                horizontalResDeg = 0.625;
+                verticalFovDeg   = 75.0;
+                verticalResDeg   = 0.625;
+                minDistance      = 0.1;
+                maxDistance      = 22.0;
                 break;
             case "minecraft_ros2:rs_lidar_m1":
                 horizontalFovDeg = 120.0;
                 horizontalResDeg = 0.2;
-                verticalResDeg   = 0.2;
                 verticalFovDeg   = 25.0;
+                verticalResDeg   = 0.2;
                 minDistance      = 0.05;
                 maxDistance      = 120.0;
                 break;
             case "minecraft_ros2:utm_30ln":
                 horizontalFovDeg = 270.0;
                 horizontalResDeg = 0.25;
-                verticalResDeg   = 1.0;
                 verticalFovDeg   = 0.0;
+                verticalResDeg   = 1.0;
                 minDistance      = 0.05;
                 maxDistance      = 30.0;
                 break;
             default:
                 horizontalFovDeg = 360.0;
                 horizontalResDeg = 1.0;
-                verticalResDeg   = 2.0;
                 verticalFovDeg   = 31.0;
+                verticalResDeg   = 2.0;
                 minDistance      = 0.1;
                 maxDistance      = 10.0;
                 break;
