@@ -43,7 +43,7 @@ public class SpawnEntityService  extends BaseComposableNode {
     private int current_model_number;
 
     public SpawnEntityService() {
-        super("add_two_ints_service");
+        super("spawn_entity_service");
         current_model_number = 0;
         // 空のリストを作成！
         jsonFileNames = new ArrayList<>();
