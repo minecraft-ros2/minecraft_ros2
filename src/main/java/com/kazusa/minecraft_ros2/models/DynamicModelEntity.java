@@ -34,20 +34,20 @@ public class DynamicModelEntity extends Mob implements GeoEntity {
     private static final EntityDataAccessor<CompoundTag> DATA_SHAPE =
         SynchedEntityData.defineId(DynamicModelEntity.class, EntityDataSerializers.COMPOUND_TAG);
 
-    // 動的ジオメトリ用フィールド
-    private static ResourceLocation geometryLoc = null;
+    private int modelId;
 
     public DynamicModelEntity(EntityType<? extends DynamicModelEntity> type, Level world) {
         super(type, world);
+        modelId = 0;
         this.setNoGravity(false);
     }
 
-    public static void setGeometryLocation(ResourceLocation loc) {
-        geometryLoc = loc;
+    public void setModelId(int id) {
+        this.modelId = id;
     }
 
-    public static ResourceLocation getGeometryLocation() {
-        return geometryLoc;
+    public int getModelId() {
+        return this.modelId;
     }
 
     // ── Entity 必須オーバーライド ──

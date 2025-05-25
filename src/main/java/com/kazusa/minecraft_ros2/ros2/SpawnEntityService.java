@@ -28,18 +28,25 @@ import net.minecraftforge.registries.RegistryObject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.ArrayList;
 
 public class SpawnEntityService  extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpawnEntityService.class);
 
     private final Service<SpawnEntity> service;
 
+    // モデルの名前の空配列
+    private final List<String> jsonFileNames;
+
     private int current_model_number;
 
     public SpawnEntityService() {
         super("add_two_ints_service");
         current_model_number = 0;
+        // 空のリストを作成！
+        jsonFileNames = new ArrayList<>();
 
         try {
             this.service = this.node.<SpawnEntity>createService(
@@ -59,35 +66,36 @@ public class SpawnEntityService  extends BaseComposableNode {
             final SpawnEntity_Response response) {
         String modelName = request.getName();
         String modelUri = request.getUri();
-        String modelResourceString = request.getResourceString();
-        if (modelName == null && (modelUri == null || modelResourceString == null)) {
+        //String modelResourceString = request.getResourceString();
+        if (modelName == null || modelName.isEmpty() || modelUri == null || modelUri.isEmpty()) {
             LOGGER.error("Invalid request: " + request);
             return;
         }
-        if (modelResourceString == null || modelResourceString.isEmpty()) {
-            try {
-                modelResourceString = Files.readString(Path.of(modelUri));
-            } catch (IOException e) {
-                LOGGER.error("Failed to read model file: " + modelUri, e);
+
+        // jsonファイル名がリストに含まれていない場合は追加
+        String jsonFileName = modelUri.substring(modelUri.lastIndexOf('/') + 1, modelUri.lastIndexOf('.'));
+        if (!jsonFileNames.contains(jsonFileName)) {
+            if (current_model_number >= 10) {
+                LOGGER.error("Maximum model number reached, overwriting existing models.");
                 return;
             }
+            jsonFileNames.add(jsonFileName);
+            GeometryApplier.applyJson(
+                Paths.get(modelUri), "runtime_geo", current_model_number
+            );
+            current_model_number++;
         }
-        try {
-            urdfToObj(modelResourceString, "/tmp/" + modelName + ".obj");
-            createJsonFromObj("/tmp/" + modelName + ".obj");
-        } catch (Exception e) {
-            throw new RuntimeException("URDF to glTF conversion failed", e);
-        }
+        //try {
+        //    urdfToObj(modelResourceString, "/tmp/" + modelName + ".obj");
+        //    createJsonFromObj("/tmp/" + modelName + ".obj");
+        //} catch (Exception e) {
+        //    throw new RuntimeException("URDF to glTF conversion failed", e);
+        //}
 
         // jsonファイルのパス
-        Path jsonPath = Path.of("/tmp/" + modelName + ".geo.json");
-        GeometryApplier.applyJson(
-            jsonPath, "runtime_geo", current_model_number
-        );
-        DynamicModelEntity.setGeometryLocation(
-            new ResourceLocation("runtime_geo", "geo/dynamic_model_" + current_model_number + ".geo.json")
-        );
-        current_model_number++;
+        //DynamicModelEntity.setGeometryLocation(
+        //    new ResourceLocation("runtime_geo", "geo/dynamic_model_" + current_model_number + ".geo.json")
+        //);
 
         double x = request.getInitialPose().getPose().getPosition().getX();
         double y = request.getInitialPose().getPose().getPosition().getY();
@@ -100,6 +108,9 @@ public class SpawnEntityService  extends BaseComposableNode {
         RegistryObject<EntityType<DynamicModelEntity>> ro = ModEntities.CUSTOM_ENTITY;
         EntityType<DynamicModelEntity> type = ro.get();
         DynamicModelEntity robot = type.create(world);
+        // jsonファイル名から番号を取得
+        int jsonIndex = jsonFileNames.indexOf(jsonFileName);
+        robot.setModelId(jsonIndex);
 
         // 4) 位置と回転を設定
         robot.moveTo(x, y, z, /* yaw= */ 0.0F, /* pitch= */ 0.0F);
@@ -108,7 +119,7 @@ public class SpawnEntityService  extends BaseComposableNode {
         world.addFreshEntity(robot);
 
         Result result = new Result();
-        byte code = (byte) 0;//(robot != null ? 1 : 0);
+        byte code = (byte) (robot != null ? 1 : 0);
         result.setResult(Byte.valueOf(code)); // 成功
         response.setResult(result);
         System.out.println("request: " + x + ", " + y + ", " + z);
