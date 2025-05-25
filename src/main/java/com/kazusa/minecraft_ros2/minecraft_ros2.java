@@ -2,9 +2,11 @@ package com.kazusa.minecraft_ros2;
 
 import com.kazusa.minecraft_ros2.config.Config;
 import com.kazusa.minecraft_ros2.ros2.ROS2Manager;
+import com.kazusa.minecraft_ros2.ros2.ModItems;
 import com.kazusa.minecraft_ros2.models.ModEntities;
 import com.kazusa.minecraft_ros2.utils.GeometryApplier;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -15,8 +17,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
 
 
 @Mod(minecraft_ros2.MOD_ID)
@@ -41,6 +41,9 @@ public class minecraft_ros2 {
 
         // Register this mod to the MinecraftForge event bus
         MinecraftForge.EVENT_BUS.register(this);
+
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        ModItems.register(bus);
 
         LOGGER.info("minecraft_ros2 mod initialized");
     }

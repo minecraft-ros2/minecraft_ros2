@@ -30,24 +30,25 @@
    ```bash
    xhost +local:root
    ```
-
-2. **Docker コンテナを起動**
+2. **リポジトリのクローン**
 
    ```bash
-   docker run -it --rm \
-     --env="DISPLAY=$DISPLAY" \
-     --env="QT_X11_NO_MITSHM=1" \
-     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-     ghcr.io/minecraft-ros2/minecraft_ros2:latest
+   git clone https://github.com/minecraft-ros2/minecraft_ros2.git
+   cd minecraft_ros2
    ```
 
-   * GPU を使いたい場合は `--gpus all` を追加してください（NVIDIA Container Toolkit のインストールが必要です）:
+3. **Docker コンテナを起動**
 
+   ```bash
+   docker compose up
+   ```
 
-3. **`rviz2` などで動作を確認**
+   このコマンドを実行すると、MinecraftとRVizが同時に起動します。RVizで点群を表示する方法については、[センサーの使い方](#センサーの使い方)をご覧ください。
 
-   コンテナ内で ROS 2 が立ち上がった後、別端末で `rviz2` を起動することで可視化が可能です：
-
+4. 権限の復元
+   ```bash
+   xhost -local:root
+   ```
 
 ## ソースインストール手順
 
@@ -89,9 +90,19 @@ rviz2 -d minecraft.rviz
 
 ---
 
+## センサーの使い方
+
+「minecraft\_ros2」で提供されているLiDARセンサーは、防具のヘルメットとして実装されています。クリエイティブモードでは、「戦闘」タブの一番最後に追加されており、プレイヤーがこれを装備することで、点群データのパブリッシュが自動的に開始されます。
+
+![lidar_2](/images/lidar_2.png)
+
+![lidar_1](/images/lidar_1.png)
+
+---
+
 ## ライセンス
 
-このプロジェクトは GNU Lesser General Public License v2.1（LGPL-2.1）でライセンスされています。
+このプロジェクトは Apache License 2.0　でライセンスされています。
 
 ---
 
@@ -106,3 +117,7 @@ rviz2 -d minecraft.rviz
 * [kazu-321](https://github.com/kazu-321)
 
 ---
+
+Velodyne VLP-16 is a registered trademark of Ouster Lidar, Inc
+
+Hesai and XT-32 is a registered trademark of Hesai Technology, Inc

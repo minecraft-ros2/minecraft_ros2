@@ -33,21 +33,25 @@ Docker provides a convenient way to try out the environment in this repository. 
    xhost +local:root
    ```
 
-2. **Start the Docker Container**
+2. **Clone this repository**
 
    ```bash
-   docker run -it --rm \
-     --env="DISPLAY=$DISPLAY" \
-     --env="QT_X11_NO_MITSHM=1" \
-     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-     ghcr.io/minecraft-ros2/minecraft_ros2:latest
+   git clone https://github.com/minecraft-ros2/minecraft_ros2.git
+   cd minecraft_ros2
    ```
 
-   * If you want to use the GPU, add `--gpus all` (requires NVIDIA Container Toolkit):
+3. **Start Docker Containers**
 
-3. **Verify Operation with Tools like `rviz2`**
+   ```bash
+   docker compose up
+   ```
 
-   Once ROS 2 is running inside the container, you can start tools like `rviz2` from another terminal to visualize the data.
+   Running this command will start both Minecraft and RViz. To learn how to visualize point clouds in RViz, check out the [How to Use the Sensor](#how-to-use-the-sensor) section.
+
+4. **Restore permissions**
+   ```bash
+   xhost -local:root
+   ```
 ---
 ## Source Installation Guide
 
@@ -89,9 +93,19 @@ rviz2 -d minecraft.rviz
 
 ---
 
+## How to Use the Sensor
+
+The LiDAR sensor provided by **minecraft\_ros2** is implemented as a helmet-type armor item. In Creative Mode, it appears at the very end of the **Combat** tab. When equipped by the player, it automatically starts publishing point cloud data.
+
+![lidar_2](/images/lidar_2.png)
+
+![lidar_1](/images/lidar_1.png)
+
+---
+
 ## License
 
-This project is licensed under the GNU Lesser General Public License v2.1 (LGPL-2.1).
+This project is licensed under the Apache License 2.0.
 
 ---
 
@@ -106,3 +120,8 @@ Contributions are welcome! Feel free to open issues or pull requests.
 * [kazu-321](https://github.com/kazu-321)
 
 ---
+
+
+Velodyne VLP-16 is a registered trademark of Ouster Lidar, Inc
+
+Hesai and XT-32 is a registered trademark of Hesai Technology, Inc

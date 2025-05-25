@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "minecraft_ros2:item/hesai_xt32"
+  }
+}

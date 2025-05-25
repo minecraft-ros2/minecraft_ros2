@@ -1,18 +1,15 @@
 package com.kazusa.minecraft_ros2.ros2;
 
 import com.kazusa.minecraft_ros2.config.Config;
-import org.ros2.rcljava.RCLJava;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import org.ros2.rcljava.node.BaseComposableNode;
-import org.ros2.rcljava.subscription.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import geometry_msgs.msg.Twist;
 
 public class TwistSubscriber extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(TwistSubscriber.class);
-    private Subscription<Twist> subscription;
 
     private Minecraft minecraft;
     private Player player;
@@ -25,7 +22,7 @@ public class TwistSubscriber extends BaseComposableNode {
 
     public TwistSubscriber() {
         super("minecraft_twist_subscriber");
-        subscription = this.node.<Twist>createSubscription(
+        this.node.<Twist>createSubscription(
             Twist.class, "/cmd_vel", this::twistCallback);
         LOGGER.info("TwistSubscriber initialized and listening on 'cmd_vel' topic");
     }
