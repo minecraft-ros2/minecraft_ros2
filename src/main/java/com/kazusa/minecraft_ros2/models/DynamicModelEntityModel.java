@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.io.InputStream;
 
 public class DynamicModelEntityModel extends GeoModel<DynamicModelEntity> {
+    public static final int MAX_MODEL_COUNT = 10; // 動的モデルの数
     // geometry.json のパス
     private static final ResourceLocation DEFAULT_GEO =
         new ResourceLocation("minecraft_ros2", "geo/custom_entity.geo.json");

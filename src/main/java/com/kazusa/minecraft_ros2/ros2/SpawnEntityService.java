@@ -3,6 +3,7 @@ package com.kazusa.minecraft_ros2.ros2;
 import com.kazusa.minecraft_ros2.minecraft_ros2;
 import com.kazusa.minecraft_ros2.models.ModEntities;
 import com.kazusa.minecraft_ros2.models.DynamicModelEntity;
+import com.kazusa.minecraft_ros2.models.DynamicModelEntityModel;
 import com.kazusa.minecraft_ros2.utils.GeometryApplier;
 import org.ros2.rcljava.RCLJava;
 import org.ros2.rcljava.node.BaseComposableNode;
@@ -69,14 +70,20 @@ public class SpawnEntityService  extends BaseComposableNode {
         //String modelResourceString = request.getResourceString();
         if (modelName == null || modelName.isEmpty() || modelUri == null || modelUri.isEmpty()) {
             LOGGER.error("Invalid request: " + request);
+            Result errorResult = new Result();
+            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            response.setResult(errorResult);
             return;
         }
 
         // jsonファイル名がリストに含まれていない場合は追加
         String jsonFileName = modelUri.substring(modelUri.lastIndexOf('/') + 1, modelUri.lastIndexOf('.'));
         if (!jsonFileNames.contains(jsonFileName)) {
-            if (current_model_number >= 10) {
+            if (current_model_number >= DynamicModelEntityModel.MAX_MODEL_COUNT) {
                 LOGGER.error("Maximum model number reached, overwriting existing models.");
+                Result errorResult = new Result();
+                errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+                response.setResult(errorResult);
                 return;
             }
             jsonFileNames.add(jsonFileName);
