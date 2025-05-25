@@ -23,6 +23,8 @@ public final class ROS2Manager {
     private PointCloudPublisher pointCloudPublisher;
     private IMUPublisher imuPublisher;
     private LivingEntitiesPublisher livingEntitiesPublisher;
+
+    private SpawnEntityService spawnEntityService;
     
     private ROS2Manager() {
         // Private constructor for singleton
@@ -71,6 +73,8 @@ public final class ROS2Manager {
                     LOGGER.info("Debug data stream disabled");
                 }
 
+
+                spawnEntityService = new SpawnEntityService();
                 
                 // Create and start executor thread for ROS2 spin
                 executorService = Executors.newSingleThreadExecutor(r -> {
@@ -87,6 +91,8 @@ public final class ROS2Manager {
                             RCLJava.spinSome(imagePublisher);
                             RCLJava.spinSome(pointCloudPublisher);
                             RCLJava.spinSome(imuPublisher);
+
+                            RCLJava.spinSome(spawnEntityService);
                             //captureAndPublishImage
                             
                             if (livingEntitiesPublisher != null) {

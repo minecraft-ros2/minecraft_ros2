@@ -58,6 +58,13 @@ repositories {
     flatDir {
         dir 'libs'
     }
+    maven {
+        name = 'GeckoLib'
+        url  = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroup("software.bernie.geckolib")
+        }
+    }
 }
 
 def ros2JavaPath = System.getenv("ROS2JAVA_INSTALL_PATH")
@@ -78,6 +85,7 @@ def ros2Messages =[
     "builtin_interfaces",
     "sensor_msgs",
     "tf2_msgs",
+    "simulation_interfaces",
     "minecraft_msgs"
 ]
 
@@ -106,6 +114,7 @@ dependencies {
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') {
         version { strictly '5.0.4' }
     }
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.6:4.5.4.1")
 }
 
 
