@@ -5,6 +5,7 @@ on:
     paths:
       - 'Dockerfile'
       - '.github/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
