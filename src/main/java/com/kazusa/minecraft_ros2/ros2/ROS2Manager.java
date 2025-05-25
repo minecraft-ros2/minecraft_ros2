@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Manages ROS2 initialization, execution, and shutdown
  */
-public class ROS2Manager {
+public final class ROS2Manager {
     private static final Logger LOGGER = LoggerFactory.getLogger(ROS2Manager.class);
     private static ROS2Manager instance;
     
