@@ -90,7 +90,7 @@ public class SpawnEntityService  extends BaseComposableNode {
             return;
         }
 
-        if (!modelUri.endsWith(".geo.json")) {
+        if (!modelUri.toLowerCase().endsWith(".geo.json")) {
             LOGGER.error("Invalid model URI, must end with .geo.json: " + modelUri);
             Result errorResult = new Result();
             errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
