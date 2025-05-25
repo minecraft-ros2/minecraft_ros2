@@ -92,12 +92,13 @@ public final class ROS2Manager {
                             if (livingEntitiesPublisher != null) {
                                 RCLJava.spinSome(livingEntitiesPublisher);
                             }
-                            
-                            Thread.sleep(5); // Don't hog CPU
+                            try {
+                                Thread.sleep(5); // Don't hog CPU
+                            } catch (InterruptedException e) {
+                                LOGGER.info("ROS2 spin thread interrupted");
+                                Thread.currentThread().interrupt();
+                            }
                         }
-                    } catch (InterruptedException e) {
-                        LOGGER.info("ROS2 spin thread interrupted");
-                        Thread.currentThread().interrupt();
                     } catch (Exception e) {
                         LOGGER.error("Error in ROS2 spin thread", e);
                     }
