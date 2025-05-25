@@ -58,7 +58,7 @@ public class IMUPublisher extends BaseComposableNode  {
 
             double accX = ax * Math.sin(currentYaw) + az * Math.cos(currentYaw);
             double accY = ax * Math.cos(currentYaw) - az * Math.sin(currentYaw);
-            double accZ = ay;
+            double accZ = ay - 9.80665;
 
             message.getHeader().setStamp(Time.now());
             message.getHeader().setFrameId("player");
