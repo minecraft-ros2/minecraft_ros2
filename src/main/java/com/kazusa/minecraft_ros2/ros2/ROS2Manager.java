@@ -21,6 +21,7 @@ public class ROS2Manager {
     private TwistSubscriber twistSubscriber;
     private ImagePublisher imagePublisher;
     private PointCloudPublisher pointCloudPublisher;
+    private IMUPublisher imuPublisher;
     private LivingEntitiesPublisher livingEntitiesPublisher;
     
     private ROS2Manager() {
@@ -61,6 +62,7 @@ public class ROS2Manager {
                 twistSubscriber = new TwistSubscriber();
                 imagePublisher = new ImagePublisher();
                 pointCloudPublisher = new PointCloudPublisher();
+                imuPublisher = new IMUPublisher();
 
                 if (Config.COMMON.enableDebugDataStreaming.get()) {
                     LOGGER.info("Debug data stream enabled");
@@ -84,6 +86,7 @@ public class ROS2Manager {
                             RCLJava.spinSome(twistSubscriber);
                             RCLJava.spinSome(imagePublisher);
                             RCLJava.spinSome(pointCloudPublisher);
+                            RCLJava.spinSome(imuPublisher);
                             //captureAndPublishImage
                             
                             if (livingEntitiesPublisher != null) {
