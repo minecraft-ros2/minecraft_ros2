@@ -512,13 +512,6 @@ public class PointCloudPublisher extends BaseComposableNode {
         return map;
     }
 
-    private ChannelFloat32 createChannel(String name, List<Float> vals) {
-        ChannelFloat32 ch = new ChannelFloat32();
-        ch.setName(name);
-        ch.setValues(vals);
-        return ch;
-    }
-
     private PointField createField(String name, int offset, byte datatype, int count) {
         PointField f = new PointField();
         f.setName(name);
