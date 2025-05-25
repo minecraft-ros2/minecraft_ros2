@@ -129,6 +129,7 @@ public class GeometryApplier {
      * @param namespace       JSON を置く namespace（ResourceLocation の前半部分）
      * @param geomName        JSON ファイル名（拡張子抜き）
      */
+    @OnlyIn(Dist.CLIENT)
     public static void applyJson(Path sourceJsonPath, String namespace, int geoNumber) {
         try {
             // ゲームディレクトリの resourcepacks/runtime_geo にコピー
