@@ -50,9 +50,6 @@ public class ClientModEventSubscriber {
                 .get("**/*")
                 .getFileSystem()
                 .getPathMatcher("glob:**/*.{geo.json,mcmeta}"); // パック内の .geo.json と pack.mcmeta ファイルを対象とする
-            PathMatcher pathMatcher2 = Paths.get("**/*.mcmeta").getFileSystem()
-                .getPathMatcher("glob:**/*.mcmeta"); // パック内の .mcmeta ファイルも対象とする
-            //pathMatcher = pathMatcher.or(pathMatcher2); // .geo.json と .json の両方を対象
             DirectoryValidator validator = new DirectoryValidator(pathMatcher);
             FolderRepositorySource folderSource = new FolderRepositorySource(
                 packDir,
