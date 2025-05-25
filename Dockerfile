@@ -4,6 +4,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
 SHELL ["/bin/bash", "-c"]
+RUN apt update \
+    && apt install -y -qq collada-urdf-tools blender \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /ws/minecraft_ros2
 COPY . .

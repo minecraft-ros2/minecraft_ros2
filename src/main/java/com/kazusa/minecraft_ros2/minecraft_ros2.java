@@ -2,6 +2,8 @@ package com.kazusa.minecraft_ros2;
 
 import com.kazusa.minecraft_ros2.config.Config;
 import com.kazusa.minecraft_ros2.ros2.ROS2Manager;
+import com.kazusa.minecraft_ros2.models.ModEntities;
+import com.kazusa.minecraft_ros2.utils.GeometryApplier;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -25,9 +27,13 @@ public class minecraft_ros2 {
     public minecraft_ros2() throws NoSuchFieldException, IllegalAccessException {
         LOGGER.info("Initializing minecraft_ros2 mod");
 
+        GeometryApplier.initResourcePack();
+
         // Register the setup methods for mod loading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
+
+        ModEntities.register(FMLJavaModLoadingContext.get().getModEventBus());
 
         // Register the configuration
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC);
