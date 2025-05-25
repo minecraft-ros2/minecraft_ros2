@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Manages ROS2 initialization, execution, and shutdown
  */
-public class ROS2Manager {
+public final class ROS2Manager {
     private static final Logger LOGGER = LoggerFactory.getLogger(ROS2Manager.class);
     private static ROS2Manager instance;
     
@@ -92,12 +92,13 @@ public class ROS2Manager {
                             if (livingEntitiesPublisher != null) {
                                 RCLJava.spinSome(livingEntitiesPublisher);
                             }
-                            
-                            Thread.sleep(5); // Don't hog CPU
+                            try {
+                                Thread.sleep(5); // Don't hog CPU
+                            } catch (InterruptedException e) {
+                                LOGGER.info("ROS2 spin thread interrupted");
+                                Thread.currentThread().interrupt();
+                            }
                         }
-                    } catch (InterruptedException e) {
-                        LOGGER.info("ROS2 spin thread interrupted");
-                        Thread.currentThread().interrupt();
                     } catch (Exception e) {
                         LOGGER.error("Error in ROS2 spin thread", e);
                     }
