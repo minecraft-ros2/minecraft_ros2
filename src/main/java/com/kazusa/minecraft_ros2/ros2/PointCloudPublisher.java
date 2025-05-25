@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import geometry_msgs.msg.Point32;
 import geometry_msgs.msg.TransformStamped;
-import sensor_msgs.msg.ChannelFloat32;
 import sensor_msgs.msg.PointField;
 import sensor_msgs.msg.PointCloud2;
 import std_msgs.msg.Header;
@@ -114,6 +113,7 @@ public class PointCloudPublisher extends BaseComposableNode {
     }
 
     private void playerHaveLiDAR() {
+        @SuppressWarnings("null")
         ItemStack helmet = minecraft.player.getItemBySlot(EquipmentSlot.HEAD);
         ResourceLocation key = ForgeRegistries.ITEMS.getKey(helmet.getItem());
         String objectKeyName = key.toString();
@@ -141,40 +141,48 @@ public class PointCloudPublisher extends BaseComposableNode {
             case "minecraft_ros2:velodyne_vlp16":
                 horizontalFovDeg = 360.0;
                 horizontalResDeg = 0.2;
-                verticalResDeg   = 2.0;
                 verticalFovDeg   = 31.0;
+                verticalResDeg   = 2.0;
                 minDistance      = 0.1;
                 maxDistance      = 100.0;
                 break;
             case "minecraft_ros2:hesai_xt32":
                 horizontalFovDeg = 360.0;
                 horizontalResDeg = 0.18;
-                verticalResDeg   = 1.0;
                 verticalFovDeg   = 31.0;
+                verticalResDeg   = 1.0;
                 minDistance      = 0.05;
                 maxDistance      = 120.0;
+                break;
+            case "minecraft_ros2:hesai_ft120":
+                horizontalFovDeg = 100.0;
+                horizontalResDeg = 0.625;
+                verticalFovDeg   = 75.0;
+                verticalResDeg   = 0.625;
+                minDistance      = 0.1;
+                maxDistance      = 22.0;
                 break;
             case "minecraft_ros2:rs_lidar_m1":
                 horizontalFovDeg = 120.0;
                 horizontalResDeg = 0.2;
-                verticalResDeg   = 0.2;
                 verticalFovDeg   = 25.0;
+                verticalResDeg   = 0.2;
                 minDistance      = 0.05;
                 maxDistance      = 120.0;
                 break;
             case "minecraft_ros2:utm_30ln":
                 horizontalFovDeg = 270.0;
                 horizontalResDeg = 0.25;
-                verticalResDeg   = 1.0;
                 verticalFovDeg   = 0.0;
+                verticalResDeg   = 1.0;
                 minDistance      = 0.05;
                 maxDistance      = 30.0;
                 break;
             default:
                 horizontalFovDeg = 360.0;
                 horizontalResDeg = 1.0;
-                verticalResDeg   = 2.0;
                 verticalFovDeg   = 31.0;
+                verticalResDeg   = 2.0;
                 minDistance      = 0.1;
                 maxDistance      = 10.0;
                 break;
@@ -187,7 +195,11 @@ public class PointCloudPublisher extends BaseComposableNode {
     private static record ScanResult(Point32 pt, float r, float g, float b) {}
 
     private void publishAsyncLidarScan() {
-        if (minecraft.player == null || minecraft.level == null) return;
+        Minecraft mc = minecraft;
+        Entity player = mc.player;
+        Level level = mc.level;
+
+        if (player == null || level == null) return;
         playerHaveLiDAR();
         if (publishPC2.get() == false) return;
 
@@ -195,14 +207,11 @@ public class PointCloudPublisher extends BaseComposableNode {
             preloadAllEntityTextures();
         }
 
-        double px = minecraft.player.getX();
-        double py = minecraft.player.getY() + minecraft.player.getEyeHeight();
-        double pz = minecraft.player.getZ();
-        double yawRad   = Math.toRadians(minecraft.player.getYRot());
+        double px = player.getX();
+        double py = player.getY() + player.getEyeHeight();
+        double pz = player.getZ();
+        double yawRad   = Math.toRadians(player.getYRot());
         double pitchRad = 0.0;
-
-        Level level = minecraft.level;
-        Entity player = minecraft.player;
 
         CompletableFuture.runAsync(() -> {
             long start = System.nanoTime();
@@ -276,6 +285,7 @@ public class PointCloudPublisher extends BaseComposableNode {
             Vec3 end = start.add(dir.x * maxDistance,
                                 dir.y * maxDistance,
                                 dir.z * maxDistance);
+            @SuppressWarnings("null")
             BlockHitResult bhr =
                 level.clip(new ClipContext(start, end, Block.OUTLINE, Fluid.NONE, minecraft.player));
             String blockName = level.getBlockState(bhr.getBlockPos()).getBlock().toString().toLowerCase();
@@ -455,6 +465,7 @@ public class PointCloudPublisher extends BaseComposableNode {
         var dispatcher = minecraft.getEntityRenderDispatcher();
         dispatcher.renderers.values().forEach(renderer -> {
             try {
+                @SuppressWarnings("null")
                 ResourceLocation loc = renderer.getTextureLocation(null);
                 if (loc == null || loc.getPath().startsWith("textures/atlas/")) return;
                 textureColorCache.computeIfAbsent(loc, this::computeAverageColor);
@@ -502,13 +513,6 @@ public class PointCloudPublisher extends BaseComposableNode {
             }
         }
         return map;
-    }
-
-    private ChannelFloat32 createChannel(String name, List<Float> vals) {
-        ChannelFloat32 ch = new ChannelFloat32();
-        ch.setName(name);
-        ch.setValues(vals);
-        return ch;
     }
 
     private PointField createField(String name, int offset, byte datatype, int count) {
