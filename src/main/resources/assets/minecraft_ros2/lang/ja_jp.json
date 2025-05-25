@@ -1,6 +1,7 @@
 {
-  "item.minecraft_ros2.velodyne_vlp16":  "Velodyne VLP16 LiDAR",
-  "item.minecraft_ros2.hesai_xt32":      "Hesai XT32 LiDAR",
+  "item.minecraft_ros2.velodyne_vlp16":  "Velodyne VLP16",
+  "item.minecraft_ros2.hesai_xt32":      "Hesai XT32",
+  "item.minecraft_ros2.hesai_ft120":     "Hesai FT120",
   "item.minecraft_ros2.rs_lidar_m1":     "RS LiDAR M1", 
   "item.minecraft_ros2.utm_30ln":        "HOKUYO UTM-30LX",
   "itemGroup.minecraft_ros2":            "ROS2 Mod"
