@@ -20,34 +20,26 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.stream.Collectors;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SpawnEntityService  extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpawnEntityService.class);
 
     private final Service<SpawnEntity> service;
 
+    private int current_model_number;
+
     public SpawnEntityService() {
         super("add_two_ints_service");
+        current_model_number = 0;
 
         try {
             this.service = this.node.<SpawnEntity>createService(
@@ -90,11 +82,12 @@ public class SpawnEntityService  extends BaseComposableNode {
         // jsonファイルのパス
         Path jsonPath = Path.of("/tmp/" + modelName + ".geo.json");
         GeometryApplier.applyJson(
-            jsonPath, "runtime_geo", modelName
+            jsonPath, "runtime_geo", current_model_number
         );
-        //DynamicModelEntity.setGeometryLocation(
-        //    new ResourceLocation("runtime_geo", "geo/" + modelName + ".geo.json")
-        //);
+        DynamicModelEntity.setGeometryLocation(
+            new ResourceLocation("runtime_geo", "geo/dynamic_model_" + current_model_number + ".geo.json")
+        );
+        current_model_number++;
 
         double x = request.getInitialPose().getPose().getPosition().getX();
         double y = request.getInitialPose().getPose().getPosition().getY();
@@ -107,38 +100,12 @@ public class SpawnEntityService  extends BaseComposableNode {
         RegistryObject<EntityType<DynamicModelEntity>> ro = ModEntities.CUSTOM_ENTITY;
         EntityType<DynamicModelEntity> type = ro.get();
         DynamicModelEntity robot = type.create(world);
-        System.out.println("SpawnEntityService: " + robot);
-        System.out.println("SpawnEntityService: " + robot);
-        System.out.println("SpawnEntityService: " + robot);
-        System.out.println("SpawnEntityService: " + robot);
-        System.out.println("SpawnEntityService: " + robot);
-
-        robot.setGeometryLocation(new ResourceLocation("runtime_geo", "geo/" + modelName + ".geo.json"));
 
         // 4) 位置と回転を設定
         robot.moveTo(x, y, z, /* yaw= */ 0.0F, /* pitch= */ 0.0F);
 
         // 5) ワールドにスポーン
         world.addFreshEntity(robot);
-
-        for (int i = 0; i < 100; i++) {
-            if (robot != null) {
-                // ここで現在位置を取得・ログに出力
-                double px = robot.getX();
-                double py = robot.getY();
-                double pz = robot.getZ();
-                BlockPos bpos = robot.blockPosition();  // 小数点以下切り捨てしてブロック座標に
-            
-                LOGGER.info("Spawned DynamicModelEntity at raw: ({}, {}, {}), block: {}", px, py, pz, bpos);
-            }
-            try {
-                Thread.sleep(100);  // 100ms 待機
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();  // 割り込みフラグをセット
-                LOGGER.error("Thread interrupted while waiting for entity spawn", e);
-                return;
-            }
-        }
 
         Result result = new Result();
         byte code = (byte) 0;//(robot != null ? 1 : 0);

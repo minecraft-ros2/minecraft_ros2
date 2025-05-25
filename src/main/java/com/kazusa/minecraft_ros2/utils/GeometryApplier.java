@@ -12,6 +12,7 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.packs.repository.Pack;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -22,6 +23,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,6 +50,74 @@ public class GeometryApplier {
                 """;
                 Files.write(mcmeta, mcmetaJson.getBytes(StandardCharsets.UTF_8));
             }
+            String jsonTemplate = """
+            {
+              "format_version": "1.12.0",
+              "minecraft:geometry": [
+                {
+                  "description": {
+                    "identifier": "voxel_model",
+                    "texture_width": 16,
+                    "texture_height": 16
+                  },
+                  "bones": [
+                    {
+                      "name": "root",
+                      "pivot": [
+                        0,
+                        0,
+                        0
+                      ],
+                      "cubes": [
+                        {
+                          "origin": [
+                            0.0,
+                            0.0,
+                            0.0
+                          ],
+                          "size": [
+                            16.0,
+                            16.0,
+                            16.0
+                          ],
+                          "uv": [
+                            0,
+                            0
+                          ],
+                          "inflate": 0.0
+                        },
+                        {
+                          "origin": [
+                            0.0,
+                            16.0,
+                            0.0
+                          ],
+                          "size": [
+                            16.0,
+                            16.0,
+                            16.0
+                          ],
+                          "uv": [
+                            0,
+                            0
+                          ],
+                          "inflate": 0.0
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+            for (int i = 0; i < 10; i++) {
+                Path destJson = packDir.resolve("assets")
+                    .resolve("runtime_geo")
+                    .resolve("geo")
+                    .resolve("dynamic_model_" + i + ".geo.json");
+                Files.createDirectories(destJson.getParent());
+                Files.write(destJson, jsonTemplate.getBytes(StandardCharsets.UTF_8));
+            }
             LOGGER.info("Initialized runtime geometry resource pack at: {}", packDir);
         } catch (Exception e) {
             LOGGER.error("Failed to initialize runtime geometry resource pack", e);
@@ -59,7 +129,7 @@ public class GeometryApplier {
      * @param namespace       JSON を置く namespace（ResourceLocation の前半部分）
      * @param geomName        JSON ファイル名（拡張子抜き）
      */
-    public static void applyJson(Path sourceJsonPath, String namespace, String geomName) {
+    public static void applyJson(Path sourceJsonPath, String namespace, int geoNumber) {
         try {
             // ゲームディレクトリの resourcepacks/runtime_geo にコピー
             Path gameDir = FMLPaths.GAMEDIR.get();
@@ -68,7 +138,7 @@ public class GeometryApplier {
                 .resolve("assets")
                 .resolve(namespace)
                 .resolve("geo")
-                .resolve(geomName + ".geo.json");
+                .resolve("dynamic_model_" + geoNumber + ".geo.json");
             Files.createDirectories(destJson.getParent());
             Files.copy(sourceJsonPath, destJson, StandardCopyOption.REPLACE_EXISTING);
 
@@ -105,9 +175,10 @@ public class GeometryApplier {
         Minecraft.getInstance().reloadResourcePacks();  // 全パックをリロード :contentReference[oaicite:2]{index=2}
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         Collection<String> resourcePacks = new ArrayList<>();
-        for (var pack : repo.getSelectedPacks()) {
-            resourcePacks.add(pack.getId());
-        }
+        repo.getSelectedPacks().stream()
+            .map(Pack::getId)
+            .map(Object::toString)            // getId() が ResourceLocation を返す場合
+            .forEach(resourcePacks::add);
         server.reloadResources(resourcePacks);
     }
 }

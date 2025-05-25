@@ -57,23 +57,6 @@ public class DynamicModelEntity extends Mob implements GeoEntity {
         builder.define(DATA_SHAPE, new CompoundTag());
     }
 
-/*
-    @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
-        // ワールド保存時に geometryLoc を復元したいならここで読み出し
-        if (tag.contains("Geometry")) {
-            this.geometryLoc = new ResourceLocation(tag.getString("Geometry"));
-        }
-    }
-
-    @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
-        // 保存時に geometryLoc を書き込む
-        if (this.geometryLoc != null) {
-            tag.putString("Geometry", this.geometryLoc.toString());
-        }
-    }
-*/
     @Override
     public boolean canBeCollidedWith() { return true; }
 
