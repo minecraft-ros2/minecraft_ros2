@@ -29,6 +29,7 @@ public class ModEntities {
                 .sized(1.0F, 1.0F)
                 // 更新間隔（ティック数）
                 .updateInterval(1)
+                .noSave()
                 // 結合して EntityType を生成
                 .build(minecraft_ros2.MOD_ID + ":custom_entity")
         );
