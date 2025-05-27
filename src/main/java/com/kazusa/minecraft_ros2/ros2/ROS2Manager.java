@@ -1,5 +1,6 @@
 package com.kazusa.minecraft_ros2.ros2;
 
+import com.kazusa.minecraft_ros2.models.DynamicModelEntity;
 import com.kazusa.minecraft_ros2.config.Config;
 import org.ros2.rcljava.RCLJava;
 import org.slf4j.Logger;
@@ -57,7 +58,6 @@ public final class ROS2Manager {
             try {
                 LOGGER.info("Initializing ROS2...");
 
-
                 RCLJava.rclJavaInit();
                 
                 // Create subscriber
@@ -93,6 +93,13 @@ public final class ROS2Manager {
                             RCLJava.spinSome(imuPublisher);
 
                             RCLJava.spinSome(spawnEntityService);
+                            if (spawnEntityService.spawnedEntities != null) {
+                                for (DynamicModelEntity entity : spawnEntityService.spawnedEntities) {
+                                    if (entity.getRobotTwistSubscriber() != null) {
+                                        RCLJava.spinSome(entity.getRobotTwistSubscriber());
+                                    }
+                                }
+                            }
                             //captureAndPublishImage
                             
                             if (livingEntitiesPublisher != null) {
@@ -147,8 +154,18 @@ public final class ROS2Manager {
      * Called every game tick
      */
     public void processTwistMessages() {
-        if (initialized.get() && twistSubscriber != null) {
+        if (!initialized.get()) {
+            return; // ROS2 not initialized, skip processing
+        }
+        if (twistSubscriber != null) {
             twistSubscriber.applyPlayerMovement();
+        }
+        if (spawnEntityService.spawnedEntities != null) {
+            for (DynamicModelEntity entity : spawnEntityService.spawnedEntities) {
+                if (entity.getRobotTwistSubscriber() != null) {
+                    entity.getRobotTwistSubscriber().applyEntityMovement();
+                }
+            }
         }
     }
     

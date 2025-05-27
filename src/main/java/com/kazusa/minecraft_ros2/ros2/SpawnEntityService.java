@@ -185,6 +185,7 @@ public class SpawnEntityService  extends BaseComposableNode {
             return;
         }
         robot.setCustomName(Component.literal(modelName)); // Entityの名前を設定
+        robot.initRobotTwistSubscriber();
 
         spawnedEntities.add(robot);
 
