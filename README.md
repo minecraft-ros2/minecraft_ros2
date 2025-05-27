@@ -1,6 +1,6 @@
 # Minecraft\_ros2
 [![build mod](https://github.com/minecraft-ros2/minecraft_ros2/actions/workflows/build_test.yaml/badge.svg)](https://github.com/minecraft-ros2/minecraft_ros2/actions/workflows/build_test.yaml)
-[![build docker image](https://github.com/minecraft-ros2/minecraft_ros2/actions/workflows/docker_build.yaml/badge.svg)](https://github.com/minecraft-ros2/minecraft_ros2/actions/workflows/docker_build.yaml)
+[![build docker image](https://github.com/minecraft-ros2/minecraft_ros2/actions/workflows/docker_build_main.yaml/badge.svg)](https://github.com/minecraft-ros2/minecraft_ros2/actions/workflows/docker_build_main.yaml)
 
 [日本語](README_JP.md)
 
