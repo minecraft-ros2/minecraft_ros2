@@ -30,3 +30,6 @@ forge*changelog.txt
 docs/.vitepress/dist
 docs/.vitepress/cache
 node_modules
+
+# macOS
+.DS_Store

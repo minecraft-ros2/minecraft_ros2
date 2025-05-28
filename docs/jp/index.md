@@ -8,13 +8,13 @@ hero:
   actions:
     - theme: brand
       text: 今すぐ始める
-      link: /jp/documentation/install_docker
+      link: /jp/documentation/what_is
     - theme: alt
       text: ドキュメント
-      link: /api/api
+      link: /jp/documentation/doc_sensors
     - theme: alt
       text: ROS 2トレーニング
-      link: /api/api
+      link: /jp/index
 
 features:
   - icon: ⛰️

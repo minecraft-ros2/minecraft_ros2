@@ -11,38 +11,58 @@ export default defineConfig({
         themeConfig: {
             nav: [
                 { text: 'Home', link: `/`},
-                { text: 'Document', link: `/en/documentation/install_docker`},
-                { text: 'ROS2 Training', link: `en/index`}
+                { text: 'Document', link: `/documentation/doc_sensors`},
+                { text: 'ROS2 Training', link: `/`}
             ],
             sidebar: {
-              "/en/documentation/": [{
-                text: 'Installation',
-                items: [
-                  { text: 'Setup with Docker', link: '/en/documentation/install_docker' },
-                  { text: 'Source Install', link: '/en/documentation/install_source' },
-                ]
-              }]
+              "/documentation/": [
+                {
+                  text: 'Introduction',
+                  items: [
+                    { text: 'What is Minecraft ROS 2 ?', link: '/documentation/what_is' },
+                    { text: 'Setup with Docker', link: '/documentation/install_docker' },
+                    { text: 'Source Install', link: '/documentation/install_source' },
+                  ]
+                },
+                {
+                  text: 'Reference',
+                  items: [
+                    { text: 'Sensors', link: './doc_sensors' },
+                    { text: 'Player Control', link: './doc_player' },
+                  ]
+                }
+            ]
             }
         }
     },
     jp: {
         label: `日本語`,
         lang: `jp`,
-        link: `/jp/index`,
+        link: `/jp/`,
         themeConfig: {
             nav: [
                 { text: 'ホーム', link: `jp/index`},
-                { text: 'ドキュメント', link: `/jp/documentation/install_docker`},
+                { text: 'ドキュメント', link: `/jp/documentation/doc_sensors`},
                 { text: 'ROS2トレーニング', link: `jp/index`}
             ],
             sidebar: {
-              "/jp/documentation/": [{
-                text: 'インストール',
-                items: [
-                  { text: 'Dockerセットアップ', link: '/jp/documentation/install_docker' },
-                  { text: 'ソースインストール', link: '/jp/documentation/install_source' },
-                ]
-              }]
+              "/jp/documentation/": [
+                {
+                  text: '紹介',
+                  items: [
+                    { text: 'はじめに', link: './what_is' },
+                    { text: 'Dockerセットアップ', link: './install_docker' },
+                    { text: 'ソースインストール', link: './install_source' },
+                  ]
+                },
+                {
+                  text: 'リファレンス',
+                  items: [
+                    { text: 'センサー', link: './doc_sensors' },
+                    { text: 'プレイヤー操作', link: './doc_player' },
+                  ]
+                }
+              ]
             }
         },
     },
@@ -51,5 +71,8 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/minecraft-ros2/minecraft_ros2' }
     ],
+    search: {
+      provider: 'local'
+    }
   }
 })

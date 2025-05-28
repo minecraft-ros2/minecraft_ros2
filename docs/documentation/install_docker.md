@@ -4,6 +4,7 @@
 
 * Ubuntu 22.04
 * Docker
+* NVIDIA Container Toolkit
 
 ## How to Set Up the Environment
 
