@@ -97,9 +97,9 @@ rviz2 -d minecraft.rviz
 
 The LiDAR sensor provided by **minecraft\_ros2** is implemented as a helmet-type armor item. In Creative Mode, it appears at the very end of the **Combat** tab. When equipped by the player, it automatically starts publishing point cloud data.
 
-![lidar_2](/images/lidar_2.png)
+![lidar_2](/docs/images/lidar_2.png)
 
-![lidar_1](/images/lidar_1.png)
+![lidar_1](/docs/images/lidar_1.png)
 
 ---
 
