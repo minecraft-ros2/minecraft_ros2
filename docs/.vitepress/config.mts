@@ -12,7 +12,7 @@ export default defineConfig({
             nav: [
                 { text: 'Home', link: `/`},
                 { text: 'Document', link: `/documentation/doc_sensors`},
-                { text: 'ROS2 Training', link: `/`}
+                // { text: 'ROS2 Training', link: `/`}
             ],
             sidebar: {
               "/documentation/": [
@@ -43,7 +43,7 @@ export default defineConfig({
             nav: [
                 { text: 'ホーム', link: `jp/index`},
                 { text: 'ドキュメント', link: `/jp/documentation/doc_sensors`},
-                { text: 'ROS2トレーニング', link: `jp/index`}
+                // { text: 'ROS2トレーニング', link: `jp/index`}
             ],
             sidebar: {
               "/jp/documentation/": [
