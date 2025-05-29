@@ -1,18 +1,19 @@
 package com.kazusa.minecraft_ros2.ros2;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import org.ros2.rcljava.Time;
-import org.ros2.rcljava.node.BaseComposableNode;
-import org.ros2.rcljava.publisher.Publisher;
-import minecraft_msgs.msg.PlayerStatus;
-import minecraft_msgs.msg.Item;
-import net.minecraft.world.effect.MobEffect;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import minecraft_msgs.msg.Item;
+import minecraft_msgs.msg.PlayerStatus;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
+import org.ros2.rcljava.node.BaseComposableNode;
+import org.ros2.rcljava.publisher.Publisher;
+import org.ros2.rcljava.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,16 +83,29 @@ public class PlayerStatusPublisher extends BaseComposableNode {
                 }
             }
             message.setInventoryItems(inventoryItems);
-            
-            // Selected item
-            ItemStack selectedStack = player.getMainHandItem();
-            if (!selectedStack.isEmpty()) {
-                Item selectedItem = new Item();
-                selectedItem.setName(selectedStack.getItem().getDescriptionId());
-                selectedItem.setCount((byte) selectedStack.getCount());
-                selectedItem.setDamage((short) selectedStack.getDamageValue());
-                selectedItem.setMaxDamage((short) selectedStack.getMaxDamage());
-                message.setSelectedItem(selectedItem);
+
+            ItemStack mainHandStack = player.getItemInHand(InteractionHand.MAIN_HAND);
+            if (!mainHandStack.isEmpty()) {
+                Item mainHandItem = new Item();
+                mainHandItem.setName(mainHandStack.getItem().getDescriptionId());
+                mainHandItem.setCount((byte) mainHandStack.getCount());
+                mainHandItem.setDamage((short) mainHandStack.getDamageValue());
+                mainHandItem.setMaxDamage((short) mainHandStack.getMaxDamage());
+                message.setMainHandItem(mainHandItem);
+            } else {
+                message.setMainHandItem(null);
+            }
+
+            ItemStack offHandStack = player.getItemInHand(InteractionHand.OFF_HAND);
+            if (!offHandStack.isEmpty()) {
+                Item offHandItem = new Item();
+                offHandItem.setName(offHandStack.getItem().getDescriptionId());
+                offHandItem.setCount((byte) offHandStack.getCount());
+                offHandItem.setDamage((short) offHandStack.getDamageValue());
+                offHandItem.setMaxDamage((short) offHandStack.getMaxDamage());
+                message.setOffHandItem(offHandItem);
+            } else {
+                message.setOffHandItem(null);
             }
 
             try {
