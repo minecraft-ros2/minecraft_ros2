@@ -2,8 +2,8 @@
 
 minecraft_ros2内のプレイヤーはTwistメッセージを与えることで操作することができます。
 
-### ROS 2
+### ROS 2 Interface
 
-Type: `geometry_msgs/Twist`
-
-Topic Name:  `/cmd_vel`
+| Type                  | Topic Name           |
+| --------------------- | -------------------- |
+| `geometry_msgs/Twist` | `/cmd_vel`           |

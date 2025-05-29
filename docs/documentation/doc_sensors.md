@@ -19,21 +19,24 @@ The LiDAR sensor provided in “minecraft\_ros2” is implemented as a helmet in
 * RS LiDAR M1
 * UTM 30LN
 
-### ROS 2
+### ROS 2 Interface
 
-Type: `sensor_msgs/PointCloud2`
-Topic Name: `/player/pointcloud`
+| Type                      | Topic Name           |
+| ------------------------- | -------------------- |
+| `sensor_msgs/PointCloud2` | `/player/pointcloud` |
 
 ## Camera
 
-### ROS 2
+### ROS 2 Interface
 
-Type: `sensor_msgs/Image`
-Topic Name: `/player/image_rawd`
+| Type                | Topic Name          |
+| ------------------- | ------------------- |
+| `sensor_msgs/Image` | `/player/image_raw` |
 
 ## IMU
 
-### ROS 2
+### ROS 2 Interface
 
-Type: `sensor_msgs/Imu`
-Topic Name: `/player/imu`
+| Type              | Topic Name    |
+| ----------------- | ------------- |
+| `sensor_msgs/Imu` | `/player/imu` |
