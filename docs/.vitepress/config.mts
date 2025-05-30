@@ -29,6 +29,7 @@ export default defineConfig({
                   items: [
                     { text: 'Sensors', link: './doc_sensors' },
                     { text: 'Player Control', link: './doc_player' },
+                    { text: 'Debug Messages', link: './doc_debug_msgs' },
                   ]
                 }
             ]
@@ -60,6 +61,7 @@ export default defineConfig({
                   items: [
                     { text: 'センサー', link: './doc_sensors' },
                     { text: 'プレイヤー操作', link: './doc_player' },
+                    { text: 'デバッグメッセージ', link: './doc_debug_msgs' },
                   ]
                 }
               ]
