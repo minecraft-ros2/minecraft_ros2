@@ -46,7 +46,7 @@ public class BlockBoolPublisher extends BaseComposableNode {
         this.publisher = this.node.<Bool>createPublisher(
             Bool.class, topicName);
         node.createWallTimer(delta_time, TimeUnit.MILLISECONDS, this::publishData);
-        LOGGER.info("BlockBoolSubscriber initialized and listening on 'cmd_vel' topic");
+        LOGGER.info("BlockBoolPublisher initialized and publishing to '{}' topic", topicName);
     }
 
     private void publishData() {
