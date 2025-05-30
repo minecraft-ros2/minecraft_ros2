@@ -4,6 +4,9 @@ import com.kazusa.minecraft_ros2.minecraft_ros2;
 import com.kazusa.minecraft_ros2.models.DynamicModelEntity;
 import com.kazusa.minecraft_ros2.models.DynamicModelEntityRenderer;
 import com.kazusa.minecraft_ros2.models.ModEntities;
+import com.kazusa.minecraft_ros2.menu.ModMenuTypes;
+import com.kazusa.minecraft_ros2.menu.NamedBlockScreen;
+import com.kazusa.minecraft_ros2.network.NetworkHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
@@ -15,6 +18,8 @@ import net.minecraft.server.packs.repository.FolderRepositorySource;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -59,6 +64,20 @@ public class ClientModEventSubscriber {
             ); // コンストラクタ( Path, PackType, PackSource, DirectoryValidator ) :contentReference[oaicite:0]{index=0}
             event.addRepositorySource(folderSource);
         }
+    }
+
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            // ここでリソースパックの初期化やその他のクライアント側のセットアップを行う
+            NetworkHandler.register(); // パケットハンドラーの登録
+        });
+        event.enqueueWork(() -> {
+            MenuScreens.register(
+                ModMenuTypes.NAMED_BLOCK_MENU.get(),
+                NamedBlockScreen::new
+            );
+        });
     }
 
 }
