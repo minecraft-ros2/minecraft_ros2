@@ -40,7 +40,7 @@ public class BlockBoolSubscriber extends BaseComposableNode {
         }
         this.subscription = this.node.<Bool>createSubscription(
             Bool.class, topicName, this::boolCallback);
-        LOGGER.info("BlockBoolSubscriber initialized and listening on 'cmd_vel' topic");
+        LOGGER.info("BlockBoolSubscriber initialized and listening on '{}' topic", topicName);
     }
 
     private void boolCallback(final Bool msg) {
