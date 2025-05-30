@@ -73,17 +73,17 @@ Retrieves the relative distance between the player and mobs.
 **minecraft_msgs/MobCategory**
 | Field Name | Type   | Description                     |
 | ---------- | ------ | ------------------------------- |
-| `MONSTER` | uint8 | Monster category |
+| `mob_category` | uint8 | Mob category |
 
 The following categories are defined:
 
-| enum Value | Value |
-| ---------- | ----- |
-| `MONSTER` | 0 |
-| `CREATURE` | 1 |
-| `AMBIENT` | 2 |
-| `AXOLOTLS` | 3 |
-| `UNDERGROUND_WATER_CREATURE` | 4 |
-| `WATER_CREATURE` | 5 |
-| `WATER_AMBIENT` | 6 |
-| `MISC` | 7 |
+| enum Value | Value | Description |
+| ---------- | ----- | ----------- |
+| `MONSTER` | 0 | Monster (Hostile Mob) |
+| `CREATURE` | 1 | Creature (Usually Friendly Mob) |
+| `AMBIENT` | 2 | Ambient Mob (Produces Environmental Sounds) |
+| `AXOLOTLS` | 3 | Axolotls |
+| `UNDERGROUND_WATER_CREATURE` | 4 | Underground Water Creature |
+| `WATER_CREATURE` | 5 | Water Creature |
+| `WATER_AMBIENT` | 6 | Water Ambient (Produces Environmental Sounds) |
+| `MISC` | 7 | Miscellaneous Mob |

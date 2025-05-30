@@ -73,17 +73,17 @@ Minecraft内のデータを直接Publishするため、センサーデータと�
 **minecraft_msgs/MobCategory**
 | Field Name | Type   | Description                     |
 | ---------- | ------ | ------------------------------- |
-| `MONSTER` | uint8 | モンスターカテゴリ |
+| `mob_category` | uint8 | Mobのカテゴリ |
 
 次のカテゴリが定義されています。
 
-| enum Value | Value |
-| ---------- | ----- |
-| `MONSTER` | 0 |
-| `CREATURE` | 1 |
-| `AMBIENT` | 2 |
-| `AXOLOTLS` | 3 |
-| `UNDERGROUND_WATER_CREATURE` | 4 |
-| `WATER_CREATURE` | 5 |
-| `WATER_AMBIENT` | 6 |
-| `MISC` | 7 |
+| enum Value | Value | Description |
+| ---------- | ----- | ----------- |
+| `MONSTER` | 0 | モンスター (敵対Mob) |
+| `CREATURE` | 1 | 動物 (ほとんどの場合友好Mob) |
+| `AMBIENT` | 2 | 環境音を発するMob |
+| `AXOLOTLS` | 3 | ウーパールーパー |
+| `UNDERGROUND_WATER_CREATURE` | 4 | 地下水棲生物 |
+| `WATER_CREATURE` | 5 | 水棲生物 |
+| `WATER_AMBIENT` | 6 | 水中の環境音を発するMob |
+| `MISC` | 7 | その他のMob |
