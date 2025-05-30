@@ -8,13 +8,13 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /en/documentation/install_docker
+      link: /documentation/what_is
     - theme: alt
       text: Documentation
-      link: /api/api
-    - theme: alt
-      text: ROS 2 Training
-      link: /api/api
+      link: /documentation/doc_sensors
+    # - theme: alt
+    #   text: ROS 2 Training
+    #   link: /
 
 features:
   - icon: ⛰️
