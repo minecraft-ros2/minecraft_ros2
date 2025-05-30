@@ -2,7 +2,7 @@
 
 minecraft-ros2では、デバッグ用のメッセージを提供しています。
 
-Minecraft内のデータを直接Publishするため、センサーデータとともに正解データを収集や不具合の調査に役立てることができます。
+Minecraft内のデータを直接Publishするため、センサーデータとともに正解データの収集や不具合の調査に役立てることができます。
 
 ![](/images/debug_msgs.png)
 
@@ -26,12 +26,12 @@ Minecraft内のデータを直接Publishするため、センサーデータと�
 | Field Name | Type   | Description                     |
 | ---------- | ------ | ------------------------------- |
 | `name` | string | プレイヤーの名前 |
-| `dimension` | string | プレイヤーがいる次元の名前 |
+| `dimension` | string | プレイヤーがいる次元 |
 | `food_level` | uint8  | プレイヤーの空腹度 |
 | `score` | uint32 | プレイヤーのスコア |
-| `sleep_timer` | uint8  | プレイヤーの睡眠タイマー |
-| `xp_level` | uint32 | プレイヤーの経験値レベル |
-| `xp_progress` | float32 | プレイヤーの経験値進行度 |
+| `sleep_timer` | uint8  | プレイヤーの睡眠時間 |
+| `xp_level` | uint32 | プレイヤーのレベル |
+| `xp_progress` | float32 | 次のレベルまでの残り経験値（％） |
 | `total_xp` | uint32 | プレイヤーの総経験値 |
 | `health` | float32 | プレイヤーの現在の体力 |
 | `max_health` | float32 | プレイヤーの最大体力 |

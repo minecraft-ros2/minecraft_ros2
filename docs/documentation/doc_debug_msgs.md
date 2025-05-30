@@ -26,12 +26,12 @@ Retrieves the player's current status information.
 | Field Name | Type   | Description                     |
 | ---------- | ------ | ------------------------------- |
 | `name` | string | Player's name |
-| `dimension` | string | Player's current dimension name |
-| `food_level` | uint8  | Player's hunger level |
+| `dimension` | string | Player's current dimension |
+| `food_level` | uint8  | Player's hunger status |
 | `score` | uint32 | Player's score |
-| `sleep_timer` | uint8  | Player's sleep timer |
+| `sleep_timer` | uint8  | Player's sleep time |
 | `xp_level` | uint32 | Player's experience level |
-| `xp_progress` | float32 | Player's experience progress |
+| `xp_progress` | float32 | Player's experience progress (%) |
 | `total_xp` | uint32 | Player's total experience |
 | `health` | float32 | Player's current health |
 | `max_health` | float32 | Player's maximum health |
