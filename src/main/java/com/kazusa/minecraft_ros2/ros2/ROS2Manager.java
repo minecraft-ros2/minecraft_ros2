@@ -23,6 +23,7 @@ public final class ROS2Manager {
     private PointCloudPublisher pointCloudPublisher;
     private IMUPublisher imuPublisher;
     private LivingEntitiesPublisher livingEntitiesPublisher;
+    private PlayerStatusPublisher playerStatusPublisher;
 
     private SpawnEntityService spawnEntityService;
     
@@ -69,6 +70,7 @@ public final class ROS2Manager {
                 if (Config.COMMON.enableDebugDataStreaming.get()) {
                     LOGGER.info("Debug data stream enabled");
                     livingEntitiesPublisher = new LivingEntitiesPublisher();
+                    playerStatusPublisher = new PlayerStatusPublisher();
                 } else {
                     LOGGER.info("Debug data stream disabled");
                 }
@@ -97,6 +99,9 @@ public final class ROS2Manager {
                             
                             if (livingEntitiesPublisher != null) {
                                 RCLJava.spinSome(livingEntitiesPublisher);
+                            }
+                            if (playerStatusPublisher != null) {
+                                RCLJava.spinSome(playerStatusPublisher);
                             }
                             try {
                                 Thread.sleep(5); // Don't hog CPU
