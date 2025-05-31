@@ -30,6 +30,7 @@ export default defineConfig({
                     { text: 'Sensors', link: './doc_sensors' },
                     { text: 'Player Control', link: './doc_player' },
                     { text: 'Debug Messages', link: './doc_debug_msgs' },
+                    { text: 'Command Execution', link: './doc_cmd' },
                   ]
                 }
             ]
@@ -62,6 +63,7 @@ export default defineConfig({
                     { text: 'センサー', link: './doc_sensors' },
                     { text: 'プレイヤー操作', link: './doc_player' },
                     { text: 'デバッグメッセージ', link: './doc_debug_msgs' },
+                    { text: 'コマンド実行', link: './doc_cmd' },
                   ]
                 }
               ]

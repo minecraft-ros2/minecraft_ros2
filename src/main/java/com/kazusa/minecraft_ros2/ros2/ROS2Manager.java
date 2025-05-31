@@ -26,6 +26,7 @@ public final class ROS2Manager {
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private ExecutorService executorService;
     private TwistSubscriber twistSubscriber;
+    private CommandSubscriber commandSubscriber;
     private ImagePublisher imagePublisher;
     private PointCloudPublisher pointCloudPublisher;
     private IMUPublisher imuPublisher;
@@ -70,6 +71,7 @@ public final class ROS2Manager {
                 
                 // Create subscriber
                 twistSubscriber = new TwistSubscriber();
+                commandSubscriber = new CommandSubscriber();
                 imagePublisher = new ImagePublisher();
                 pointCloudPublisher = new PointCloudPublisher();
                 imuPublisher = new IMUPublisher();
@@ -97,6 +99,7 @@ public final class ROS2Manager {
                     try {
                         while (!Thread.currentThread().isInterrupted() && RCLJava.ok()) {
                             RCLJava.spinSome(twistSubscriber);
+                            RCLJava.spinSome(commandSubscriber);
                             RCLJava.spinSome(imagePublisher);
                             RCLJava.spinSome(pointCloudPublisher);
                             RCLJava.spinSome(imuPublisher);
@@ -171,6 +174,7 @@ public final class ROS2Manager {
             }
             
             twistSubscriber = null;
+            commandSubscriber = null;
         }
     }
     
