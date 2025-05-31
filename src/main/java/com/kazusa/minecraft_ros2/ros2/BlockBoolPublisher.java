@@ -1,6 +1,5 @@
 package com.kazusa.minecraft_ros2.ros2;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -10,7 +9,6 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import net.minecraft.world.level.Level;
 import org.ros2.rcljava.node.BaseComposableNode;
 import org.ros2.rcljava.publisher.Publisher;
-import org.ros2.rcljava.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import std_msgs.msg.Bool;
@@ -22,11 +20,7 @@ public class BlockBoolPublisher extends BaseComposableNode {
 
     private final Publisher<Bool> publisher;
 
-    private Minecraft minecraft;
-
     private BlockPos targetPos;
-
-    private boolean state;
 
     private long delta_time = 10;
 

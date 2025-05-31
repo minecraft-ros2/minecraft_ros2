@@ -18,7 +18,7 @@ hero:
 
 features:
   - icon: ⛰️
-    title: Minecraft-is-Simulator
+    title: Minecraft as a ROS Simulator
     details: あなたが普段よく遊ぶマインクラフトの世界とROS 2を接続できます。End-To-Endシミュレータを作成するコストを大幅に低減します。
   - icon: 🚗
     title: 多種多様なセンサー

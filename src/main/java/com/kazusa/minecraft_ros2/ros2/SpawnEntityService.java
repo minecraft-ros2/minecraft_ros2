@@ -1,11 +1,9 @@
 package com.kazusa.minecraft_ros2.ros2;
 
-import com.kazusa.minecraft_ros2.minecraft_ros2;
 import com.kazusa.minecraft_ros2.models.ModEntities;
 import com.kazusa.minecraft_ros2.models.DynamicModelEntity;
 import com.kazusa.minecraft_ros2.models.DynamicModelEntityModel;
 import com.kazusa.minecraft_ros2.utils.GeometryApplier;
-import org.ros2.rcljava.RCLJava;
 import org.ros2.rcljava.node.BaseComposableNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,17 +11,13 @@ import simulation_interfaces.srv.SpawnEntity;
 import simulation_interfaces.srv.SpawnEntity_Request;
 import simulation_interfaces.srv.SpawnEntity_Response;
 import simulation_interfaces.msg.Result;
-import geometry_msgs.msg.PoseStamped;
 import org.ros2.rcljava.service.RMWRequestId;
-import org.ros2.rcljava.service.Service;
 
 import net.minecraftforge.server.ServerLifecycleHooks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.io.IOException;
@@ -35,8 +29,6 @@ import java.util.ArrayList;
 
 public class SpawnEntityService  extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpawnEntityService.class);
-
-    private final Service<SpawnEntity> service;
 
     // モデルの名前の空配列
     private final List<String> jsonFileNames;
@@ -50,7 +42,7 @@ public class SpawnEntityService  extends BaseComposableNode {
         jsonFileNames = new ArrayList<>();
 
         try {
-            this.service = this.node.<SpawnEntity>createService(
+            this.node.<SpawnEntity>createService(
                 SpawnEntity.class,            // サービス定義クラス
                 "spawn_entity",               // トピック名
                 (RMWRequestId header, SpawnEntity_Request request,

@@ -17,14 +17,11 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.FolderRepositorySource;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.level.validation.DirectoryValidator;
-import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.PathMatcher;
 
 @Mod.EventBusSubscriber(modid = minecraft_ros2.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
