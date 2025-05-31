@@ -1,6 +1,5 @@
 package com.kazusa.minecraft_ros2.models;
 
-import com.kazusa.minecraft_ros2.models.DynamicModelEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 
 import software.bernie.geckolib.renderer.GeoEntityRenderer;

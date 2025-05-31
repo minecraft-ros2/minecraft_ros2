@@ -8,9 +8,6 @@ import net.minecraft.world.phys.Vec3;
 import org.ros2.rcljava.Time;
 import org.ros2.rcljava.node.BaseComposableNode;
 import org.ros2.rcljava.publisher.Publisher;
-import org.ros2.rcljava.timer.WallTimer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import geometry_msgs.msg.Pose;
 import geometry_msgs.msg.Point;
 import geometry_msgs.msg.Quaternion;
@@ -28,7 +25,6 @@ import java.util.ArrayList;
 
 
 public class LivingEntitiesPublisher extends BaseComposableNode {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LivingEntitiesPublisher.class);
 
     private final Publisher<minecraft_msgs.msg.LivingEntityArray> livingEntitiesPublisher;
     private final Minecraft minecraft;
@@ -38,11 +34,6 @@ public class LivingEntitiesPublisher extends BaseComposableNode {
     private final double searchVerticalRadius = 16.0;
     private final int publishRateHz = 10;
 
-    private final WallTimer timer;
-
-    private final Map<Integer, String> mobIdMap = new HashMap<>();
-    private int mobCounter = 0;
-
     public LivingEntitiesPublisher() {
         super("minecraft_living_entities_publisher");
 
@@ -50,18 +41,17 @@ public class LivingEntitiesPublisher extends BaseComposableNode {
         minecraft = Minecraft.getInstance();
 
         long periodMs = 1000 / publishRateHz;
-        timer = node.createWallTimer(periodMs, TimeUnit.MILLISECONDS, this::publishNearbyLivingEntities);
+        node.createWallTimer(periodMs, TimeUnit.MILLISECONDS, this::publishNearbyLivingEntities);
     }
 
     private void publishNearbyLivingEntities() {
-        if (minecraft.player == null || minecraft.level == null) return;
-        
-        double px = minecraft.player.getX();
-        double py = minecraft.player.getY();
-        double pz = minecraft.player.getZ();
+        var player = minecraft.player;
+        var level  = minecraft.level;
+        if (player == null || level == null) return;
 
-        Level level = minecraft.level;
-        Entity player = minecraft.player;
+        double px = player.getX();
+        double py = player.getY();
+        double pz = player.getZ();
 
         List<net.minecraft.world.entity.LivingEntity> nearbyLivingEntities =
             findNearbyLivingEntities(level, player, px, py, pz);

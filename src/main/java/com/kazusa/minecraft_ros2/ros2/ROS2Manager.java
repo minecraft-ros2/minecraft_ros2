@@ -2,6 +2,12 @@ package com.kazusa.minecraft_ros2.ros2;
 
 import com.kazusa.minecraft_ros2.models.DynamicModelEntity;
 import com.kazusa.minecraft_ros2.config.Config;
+import com.kazusa.minecraft_ros2.block.RedstonePubSubBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.Minecraft;
 import org.ros2.rcljava.RCLJava;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
 
 /**
  * Manages ROS2 initialization, execution, and shutdown
@@ -24,6 +31,7 @@ public final class ROS2Manager {
     private PointCloudPublisher pointCloudPublisher;
     private IMUPublisher imuPublisher;
     private LivingEntitiesPublisher livingEntitiesPublisher;
+    private PlayerStatusPublisher playerStatusPublisher;
 
     private SpawnEntityService spawnEntityService;
     
@@ -69,6 +77,7 @@ public final class ROS2Manager {
                 if (Config.COMMON.enableDebugDataStreaming.get()) {
                     LOGGER.info("Debug data stream enabled");
                     livingEntitiesPublisher = new LivingEntitiesPublisher();
+                    playerStatusPublisher = new PlayerStatusPublisher();
                 } else {
                     LOGGER.info("Debug data stream disabled");
                 }
@@ -93,6 +102,26 @@ public final class ROS2Manager {
                             RCLJava.spinSome(imuPublisher);
 
                             RCLJava.spinSome(spawnEntityService);
+
+                            Level world = Minecraft.getInstance().level;
+                            if (world != null) {
+                                Set<BlockPos> all = RedstonePubSubBlock.getAllInstances();
+                                for (BlockPos pos : all) {
+                                    BlockState state = world.getBlockState(pos);
+                                    Block block = state.getBlock();
+                                    if (block instanceof RedstonePubSubBlock redstoneBlock) {
+                                        BlockBoolPublisher publisher = redstoneBlock.getPublisher();
+                                        if (publisher != null) {
+                                            RCLJava.spinSome(publisher);
+                                        }
+                                        BlockBoolSubscriber subscriber = redstoneBlock.getSubscriber();
+                                        if (subscriber != null) {
+                                            RCLJava.spinSome(subscriber);
+                                        }
+                                    }
+                                }
+                            }
+
                             if (spawnEntityService.spawnedEntities != null) {
                                 for (DynamicModelEntity entity : spawnEntityService.spawnedEntities) {
                                     if (entity.getRobotTwistSubscriber() != null) {
@@ -104,6 +133,9 @@ public final class ROS2Manager {
                             
                             if (livingEntitiesPublisher != null) {
                                 RCLJava.spinSome(livingEntitiesPublisher);
+                            }
+                            if (playerStatusPublisher != null) {
+                                RCLJava.spinSome(playerStatusPublisher);
                             }
                             try {
                                 Thread.sleep(5); // Don't hog CPU

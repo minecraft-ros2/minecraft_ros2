@@ -2,8 +2,12 @@ package com.kazusa.minecraft_ros2;
 
 import com.kazusa.minecraft_ros2.config.Config;
 import com.kazusa.minecraft_ros2.graphics.ModelHandler;
+import com.kazusa.minecraft_ros2.items.BlockItems;
 import com.kazusa.minecraft_ros2.ros2.ModItems;
 import com.kazusa.minecraft_ros2.ros2.ROS2Manager;
+import com.kazusa.minecraft_ros2.block.ModBlocks;
+import com.kazusa.minecraft_ros2.block.ModBlockEntities;
+import com.kazusa.minecraft_ros2.menu.ModMenuTypes;
 import com.kazusa.minecraft_ros2.models.ModEntities;
 import com.kazusa.minecraft_ros2.utils.GeometryApplier;
 import net.minecraftforge.common.MinecraftForge;
@@ -44,6 +48,10 @@ public class minecraft_ros2 {
 
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         ModItems.register(bus);
+        BlockItems.ITEMS.register(bus);
+        ModBlocks.BLOCKS.register(bus);
+        ModBlockEntities.register(bus);
+        ModMenuTypes.MENUS.register(bus);
         ModelHandler.register(bus);
 
         LOGGER.info("minecraft_ros2 mod initialized");
