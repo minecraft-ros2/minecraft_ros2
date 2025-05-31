@@ -18,7 +18,7 @@ hero:
 
 features:
   - icon: ⛰️
-    title: Minecraft-is-Simulator
+    title: Minecraft as a ROS Simulator
     details: Connect the Minecraft world you love with ROS 2. Greatly reduce the cost of building an end-to-end simulator.
   - icon: 🚗
     title: Wide Variety of Sensors
