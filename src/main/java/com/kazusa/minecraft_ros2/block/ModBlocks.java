@@ -1,7 +1,6 @@
 package com.kazusa.minecraft_ros2.block;
 
 import com.kazusa.minecraft_ros2.minecraft_ros2;
-import com.kazusa.minecraft_ros2.block.RedstonePubSubBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;

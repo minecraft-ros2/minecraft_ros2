@@ -1,6 +1,5 @@
 package com.kazusa.minecraft_ros2.ros2;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -19,11 +18,7 @@ public class BlockBoolSubscriber extends BaseComposableNode {
 
     private final Subscription<Bool> subscription;
 
-    private Minecraft minecraft;
-
     private BlockPos targetPos;
-
-    private boolean state;
 
     public BlockBoolSubscriber(BlockPos pos, String namespace) {
         super("minecraft_block_bool_subscriber");

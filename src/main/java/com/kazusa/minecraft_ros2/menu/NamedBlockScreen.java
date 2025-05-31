@@ -1,7 +1,6 @@
 package com.kazusa.minecraft_ros2.menu;
 
 import com.kazusa.minecraft_ros2.minecraft_ros2;
-import com.kazusa.minecraft_ros2.menu.NamedBlockContainer;
 import com.kazusa.minecraft_ros2.network.NetworkHandler;
 import com.kazusa.minecraft_ros2.network.RenamePacket;
 import net.minecraft.client.gui.GuiGraphics;
