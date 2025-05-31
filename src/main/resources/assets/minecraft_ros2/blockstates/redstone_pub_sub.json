@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "powered=false": { "model": "minecraft_ros2:block/redstone_pub_sub_off" },
+    "powered=true":  { "model": "minecraft_ros2:block/redstone_pub_sub_on"  }
+  }
+}
