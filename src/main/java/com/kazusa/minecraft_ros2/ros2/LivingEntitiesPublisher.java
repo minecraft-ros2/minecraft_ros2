@@ -45,14 +45,13 @@ public class LivingEntitiesPublisher extends BaseComposableNode {
     }
 
     private void publishNearbyLivingEntities() {
-        if (minecraft.player == null || minecraft.level == null) return;
-        
-        double px = minecraft.player.getX();
-        double py = minecraft.player.getY();
-        double pz = minecraft.player.getZ();
+        var player = minecraft.player;
+        var level  = minecraft.level;
+        if (player == null || level == null) return;
 
-        Level level = minecraft.level;
-        Entity player = minecraft.player;
+        double px = player.getX();
+        double py = player.getY();
+        double pz = player.getZ();
 
         List<net.minecraft.world.entity.LivingEntity> nearbyLivingEntities =
             findNearbyLivingEntities(level, player, px, py, pz);
