@@ -70,7 +70,6 @@ public class RobotTwistSubscriber extends BaseComposableNode {
                 double dy = entity.getDeltaMovement().y(); // preserve current vertical motion
 
                 // ジャンプ処理（ジャンプ中でなければジャンプ）
-                // ジャンプ処理（ジャンプ中でなければジャンプ）
                 if (lastLinearZ > 0.1 && entity.verticalCollision) {
                     dy = 0.42; // Minecraft のジャンプ速度
                 }
