@@ -191,6 +191,8 @@ public class SpawnEntityService  extends BaseComposableNode {
         // 5) ワールドにスポーン
         world.addFreshEntity(robot);
 
+        robot.setModelDimensions();
+
         Result result = new Result();
         byte code = (byte) (robot != null ? 1 : 0);
         result.setResult(Byte.valueOf(code)); // 成功
