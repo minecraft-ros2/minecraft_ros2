@@ -249,7 +249,7 @@ public class PointCloudPublisher extends BaseComposableNode {
 
             double elapsed_3 = (System.nanoTime() - start) / 1_000_000.0;
 
-            LOGGER.info("Color: {} ms, LiDAR: {} ms, ROS2: {} ms", String.format("%.2f", elapsed_1), String.format("%.2f", elapsed_2), String.format("%.2f", elapsed_3));
+            // LOGGER.info("Color: {} ms, LiDAR: {} ms, ROS2: {} ms", String.format("%.2f", elapsed_1), String.format("%.2f", elapsed_2), String.format("%.2f", elapsed_3));
         });
     }
 
