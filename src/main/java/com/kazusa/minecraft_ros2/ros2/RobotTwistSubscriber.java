@@ -81,7 +81,7 @@ public class RobotTwistSubscriber extends BaseComposableNode {
             }
             else if (Math.abs(lastAngularZ) > 0.1 || Math.abs(lastAngularY) > 0.1) {
                 // “ダミー” の水平速度をつける（向き更新のトリガーにするため）
-                double dy = entity.getDeltaMovement().y; // 垂直速度はそのまま
+                double dy = entity.getDeltaMovement().y(); // 垂直速度はそのまま
                 double dummyV = 0.01;
                 float yaw = entity.getYRot();
                 double yawRad = Math.toRadians(yaw);
