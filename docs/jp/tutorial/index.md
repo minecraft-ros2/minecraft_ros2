@@ -7,9 +7,8 @@
 
 ## 目次
 0. **[ROS 2とは？](/jp/tutorial/00_what_is_ros2)**
-    - ROS 2の基本コマンドを端末で実行
-    - minecraft_ros2の環境構築
-    - minecraft_ros2の存在を確認する
+    - ROS 2の基本を学ぶ
+    - ROS 2の素晴らしさを知る
 
 1. **[topic](/jp/tutorial/01_topic)**
     - ROS 2トピックとメッセージの基礎を理解
@@ -28,3 +27,8 @@
 4. **[service](/jp/tutorial/04_service)**
     - サービスの理解
     - Minecraftのコマンドの実行
+
+## 環境構築
+### 1. ROS 2, dockerの環境構築
+
+### 2. minecraft_ros2の環境構築
