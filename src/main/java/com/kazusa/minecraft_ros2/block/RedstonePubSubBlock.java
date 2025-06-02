@@ -1,6 +1,6 @@
 package com.kazusa.minecraft_ros2.block;
 
-import com.kazusa.minecraft_ros2.ros2.BlockBoolPublisher;
+import com.kazusa.minecraft_ros2.ros2.BlockIntPublisher;
 import com.kazusa.minecraft_ros2.ros2.BlockBoolSubscriber;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,7 +38,7 @@ public class RedstonePubSubBlock extends Block implements EntityBlock {
     // ワールド中に現在存在する座標を保持
     private static final Set<BlockPos> INSTANCES = ConcurrentHashMap.newKeySet();
 
-    private BlockBoolPublisher publisher;
+    private BlockIntPublisher publisher;
     private BlockBoolSubscriber subscriber;
 
     @Override
@@ -180,10 +180,10 @@ public class RedstonePubSubBlock extends Block implements EntityBlock {
             publisher.shutdown();
             publisher = null;
         }
-        publisher = new BlockBoolPublisher(pos, namespace);
+        publisher = new BlockIntPublisher(pos, namespace);
     }
 
-    public BlockBoolPublisher getPublisher() {
+    public BlockIntPublisher getPublisher() {
         return publisher;
     }
 
