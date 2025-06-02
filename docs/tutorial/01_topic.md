@@ -1,4 +1,4 @@
-# topic# topic
+# topic
 A topic is an essential communication method when working with ROS 2.
 
 In this page, we will learn the following topics:
