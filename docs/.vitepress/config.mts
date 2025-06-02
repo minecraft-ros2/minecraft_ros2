@@ -37,13 +37,13 @@ export default defineConfig({
             "/tutorial/": [
                 {
                   text: 'Tutorial',
+                  link: '/tutorial/index',
                   items: [
                     { text: 'what is ros2?', link: '/tutorial/00_what_is_ros2'},
                     { text: 'topic', link: '/tutorial/01_topic'},
                     { text: 'rviz2', link: '/tutorial/02_rviz2'},
                     { text: 'tf', link: '/tutorial/03_tf'},
-                    { text: 'service', link: '/tutorial/04_service'},
-                    { text: 'action', link: '/tutorial/05_action'},
+                    { text: 'service', link: '/tutorial/04_service'}
                   ]
                 }
             ]
@@ -83,13 +83,13 @@ export default defineConfig({
               "/jp/tutorial/": [
                 {
                   text: 'チュートリアル',
+                  link: '/jp/tutorial/index',
                   items: [
                     { text: 'ROS 2とは？', link: '/jp/tutorial/00_what_is_ros2'},
                     { text: 'トピック', link: '/jp/tutorial/01_topic'},
                     { text: 'rviz2', link: '/jp/tutorial/02_rviz2'},
                     { text: 'tf', link: '/jp/tutorial/03_tf'},
-                    { text: 'サービス', link: '/jp/tutorial/04_service'},
-                    { text: 'アクション', link: '/jp/tutorial/05_action'},
+                    { text: 'サービス', link: '/jp/tutorial/04_service'}
                   ]
                 }
               ]
