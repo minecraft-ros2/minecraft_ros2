@@ -37,7 +37,7 @@ export default defineConfig({
             // "/tutorial/": [
             //     {
             //       text: 'Tutorial',
-            // }
+            }
         }
     },
     jp: {
