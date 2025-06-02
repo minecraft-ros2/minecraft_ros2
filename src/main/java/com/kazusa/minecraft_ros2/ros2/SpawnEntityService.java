@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.registries.RegistryObject;
+import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class SpawnEntityService  extends BaseComposableNode {
+    public final List<DynamicModelEntity> spawnedEntities = new ArrayList<>();
+
     private static final Logger LOGGER = LoggerFactory.getLogger(SpawnEntityService.class);
 
     // モデルの名前の空配列
@@ -65,6 +68,22 @@ public class SpawnEntityService  extends BaseComposableNode {
             Result errorResult = new Result();
             errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
             errorResult.setErrorMessage("Invalid request: modelName or modelUri is empty");
+            response.setResult(errorResult);
+            return;
+        }
+
+        boolean isUnique = true;
+        for (DynamicModelEntity entity : spawnedEntities) {
+            if (entity.getCustomName() != null && entity.getCustomName().getString().equals(modelName)) {
+                isUnique = false;
+                break;
+            }
+        }
+        if (!isUnique) {
+            LOGGER.error("Entity with name '" + modelName + "' already exists.");
+            Result errorResult = new Result();
+            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setErrorMessage("Entity with name '" + modelName + "' already exists.");
             response.setResult(errorResult);
             return;
         }
@@ -149,6 +168,19 @@ public class SpawnEntityService  extends BaseComposableNode {
         RegistryObject<EntityType<DynamicModelEntity>> ro = ModEntities.CUSTOM_ENTITY;
         EntityType<DynamicModelEntity> type = ro.get();
         DynamicModelEntity robot = type.create(world);
+        if (robot == null) {
+            LOGGER.error("Failed to create entity of type: " + type);
+            Result errorResult = new Result();
+            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setErrorMessage("Failed to create entity of type: " + type);
+            response.setResult(errorResult);
+            return;
+        }
+        robot.setCustomName(Component.literal(modelName)); // Entityの名前を設定
+        robot.initRobotTwistSubscriber();
+
+        spawnedEntities.add(robot);
+
         // jsonファイル名から番号を取得
         int jsonIndex = jsonFileNames.indexOf(jsonFileName);
         robot.setModelId(jsonIndex);
@@ -158,6 +190,8 @@ public class SpawnEntityService  extends BaseComposableNode {
 
         // 5) ワールドにスポーン
         world.addFreshEntity(robot);
+
+        robot.setModelDimensions();
 
         Result result = new Result();
         byte code = (byte) (robot != null ? 1 : 0);
