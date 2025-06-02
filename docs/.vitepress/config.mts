@@ -12,7 +12,7 @@ export default defineConfig({
             nav: [
                 { text: 'Home', link: `/`},
                 { text: 'Document', link: `/documentation/doc_sensors`},
-                // { text: 'ROS2 Training', link: `/`}
+                { text: 'ROS 2 Tutorial', link: `/tutorial/index`}
             ],
             sidebar: {
               "/documentation/": [
@@ -33,8 +33,11 @@ export default defineConfig({
                     { text: 'Command Execution', link: './doc_cmd' },
                   ]
                 }
-            ]
-            }
+            ],
+            // "/tutorial/": [
+            //     {
+            //       text: 'Tutorial',
+            // }
         }
     },
     jp: {
@@ -45,7 +48,7 @@ export default defineConfig({
             nav: [
                 { text: 'ホーム', link: `jp/index`},
                 { text: 'ドキュメント', link: `/jp/documentation/doc_sensors`},
-                // { text: 'ROS2トレーニング', link: `jp/index`}
+                { text: 'ROS 2チュートリアル', link: `jp/tutorial/index`}
             ],
             sidebar: {
               "/jp/documentation/": [
