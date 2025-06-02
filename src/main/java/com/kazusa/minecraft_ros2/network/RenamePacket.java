@@ -1,7 +1,6 @@
 package com.kazusa.minecraft_ros2.network;
 
 import com.kazusa.minecraft_ros2.menu.RedStonePubSubBlockContainer;
-import com.kazusa.minecraft_ros2.menu.RedStonePubSubBlockContainer;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
