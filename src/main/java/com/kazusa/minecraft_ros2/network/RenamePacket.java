@@ -1,6 +1,8 @@
 package com.kazusa.minecraft_ros2.network;
 
-import com.kazusa.minecraft_ros2.menu.NamedBlockContainer;
+import com.kazusa.minecraft_ros2.menu.RedStonePubSubBlockContainer;
+import com.kazusa.minecraft_ros2.menu.RedStonePubSubBlockContainer;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.event.network.CustomPayloadEvent;
@@ -28,7 +30,7 @@ public class RenamePacket {
     public void handle(CustomPayloadEvent.Context ctx) {
         ctx.enqueueWork(() -> {
             ServerPlayer player = ctx.getSender();
-            if (player != null && player.containerMenu instanceof NamedBlockContainer menu) {
+            if (player != null && player.containerMenu instanceof RedStonePubSubBlockContainer menu) {
                 menu.onRename(this.name, player);
             }
         });

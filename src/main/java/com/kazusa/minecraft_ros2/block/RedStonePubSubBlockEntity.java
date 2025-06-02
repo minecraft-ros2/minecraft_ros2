@@ -1,6 +1,6 @@
 package com.kazusa.minecraft_ros2.block;
 
-import com.kazusa.minecraft_ros2.menu.NamedBlockContainer;
+import com.kazusa.minecraft_ros2.menu.RedStonePubSubBlockContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -14,13 +14,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.core.HolderLookup;
 
-public class NamedBlockEntity extends BlockEntity
+public class RedStonePubSubBlockEntity extends BlockEntity
     implements Nameable, MenuProvider {
 
     private Component customName;
 
-    public NamedBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.NAMED_BLOCK_ENTITY.get(), pos, state);
+    public RedStonePubSubBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.RED_STONE_PUB_SUB_BLOCK_ENTITY.get(), pos, state);
     }
 
     // Nameable インターフェイス
@@ -39,7 +39,7 @@ public class NamedBlockEntity extends BlockEntity
     // GUI 用 Factory（ContainerType〈…〉を later register しておくこと）
     @Override
     public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
-        return new NamedBlockContainer(syncId, inv, getBlockPos());
+        return new RedStonePubSubBlockContainer(syncId, inv, getBlockPos());
     }
 
     // 外部から呼ぶ setter

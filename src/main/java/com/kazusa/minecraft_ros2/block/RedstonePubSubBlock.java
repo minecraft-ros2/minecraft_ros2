@@ -43,7 +43,7 @@ public class RedstonePubSubBlock extends Block implements EntityBlock {
 
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new NamedBlockEntity(pos, state);
+        return new RedStonePubSubBlockEntity(pos, state);
     }
 
     public RedstonePubSubBlock() {
@@ -108,7 +108,7 @@ public class RedstonePubSubBlock extends Block implements EntityBlock {
             if (!world.isClientSide) {
                 ServerPlayer serverPlayer = (ServerPlayer) player;
                 BlockEntity be = world.getBlockEntity(pos);
-                if (be instanceof NamedBlockEntity named) {
+                if (be instanceof RedStonePubSubBlockEntity named) {
                     // MenuProvider（= NamedScreenHandlerFactory）として開く
                     var consumer = (Consumer<FriendlyByteBuf>) buf -> {
                         buf.writeBlockPos(pos);  // ブロック位置を送信
