@@ -34,9 +34,19 @@ export default defineConfig({
                   ]
                 }
             ],
-            // "/tutorial/": [
-            //     {
-            //       text: 'Tutorial',
+            "/tutorial/": [
+                {
+                  text: 'Tutorial',
+                  items: [
+                    { text: 'what is ros2?', link: '/tutorial/00_what_is_ros2'},
+                    { text: 'topic', link: '/tutorial/01_topic'},
+                    { text: 'rviz2', link: '/tutorial/02_rviz2'},
+                    { text: 'tf', link: '/tutorial/03_tf'},
+                    { text: 'service', link: '/tutorial/04_service'},
+                    { text: 'action', link: '/tutorial/05_action'},
+                  ]
+                }
+            ]
             }
         }
     },
@@ -67,6 +77,19 @@ export default defineConfig({
                     { text: 'プレイヤー操作', link: './doc_player' },
                     { text: 'デバッグメッセージ', link: './doc_debug_msgs' },
                     { text: 'コマンド実行', link: './doc_cmd' },
+                  ]
+                }
+              ],
+              "/jp/tutorial/": [
+                {
+                  text: 'チュートリアル',
+                  items: [
+                    { text: 'ROS 2とは？', link: '/jp/tutorial/00_what_is_ros2'},
+                    { text: 'トピック', link: '/jp/tutorial/01_topic'},
+                    { text: 'rviz2', link: '/jp/tutorial/02_rviz2'},
+                    { text: 'tf', link: '/jp/tutorial/03_tf'},
+                    { text: 'サービス', link: '/jp/tutorial/04_service'},
+                    { text: 'アクション', link: '/jp/tutorial/05_action'},
                   ]
                 }
               ]
