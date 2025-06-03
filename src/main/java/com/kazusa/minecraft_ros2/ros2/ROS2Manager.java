@@ -113,7 +113,7 @@ public final class ROS2Manager {
                                     BlockState state = world.getBlockState(pos);
                                     Block block = state.getBlock();
                                     if (block instanceof RedstonePubSubBlock redstoneBlock) {
-                                        BlockBoolPublisher publisher = redstoneBlock.getPublisher();
+                                        BlockIntPublisher publisher = redstoneBlock.getPublisher();
                                         if (publisher != null) {
                                             RCLJava.spinSome(publisher);
                                         }

@@ -5,7 +5,7 @@ import com.kazusa.minecraft_ros2.models.DynamicModelEntity;
 import com.kazusa.minecraft_ros2.models.DynamicModelEntityRenderer;
 import com.kazusa.minecraft_ros2.models.ModEntities;
 import com.kazusa.minecraft_ros2.menu.ModMenuTypes;
-import com.kazusa.minecraft_ros2.menu.NamedBlockScreen;
+import com.kazusa.minecraft_ros2.menu.RedStonePubSubBlockScreen;
 import com.kazusa.minecraft_ros2.network.NetworkHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -71,8 +71,8 @@ public class ClientModEventSubscriber {
         });
         event.enqueueWork(() -> {
             MenuScreens.register(
-                ModMenuTypes.NAMED_BLOCK_MENU.get(),
-                NamedBlockScreen::new
+                ModMenuTypes.REDSTONE_PUB_SUB_BLOCK_MENU.get(),
+                RedStonePubSubBlockScreen::new
             );
         });
     }

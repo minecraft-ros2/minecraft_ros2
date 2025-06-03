@@ -11,9 +11,9 @@ public class ModMenuTypes {
     public static final DeferredRegister<MenuType<?>> MENUS =
         DeferredRegister.create(ForgeRegistries.MENU_TYPES, minecraft_ros2.MOD_ID);
 
-    // NamedBlock 用 ScreenHandler を登録
-    public static final RegistryObject<MenuType<NamedBlockContainer>> NAMED_BLOCK_MENU =
-        MENUS.register("named_block_menu",
-            () -> IForgeMenuType.create(NamedBlockContainer::new)
+    // RedStonePubSub 用 ScreenHandler を登録
+    public static final RegistryObject<MenuType<RedStonePubSubBlockContainer>> REDSTONE_PUB_SUB_BLOCK_MENU =
+        MENUS.register("red_stone_pub_sub_block_menu",
+            () -> IForgeMenuType.create(RedStonePubSubBlockContainer::new)
         );
 }

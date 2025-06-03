@@ -1,6 +1,6 @@
 package com.kazusa.minecraft_ros2.block;
 
-import com.kazusa.minecraft_ros2.ros2.BlockBoolPublisher;
+import com.kazusa.minecraft_ros2.ros2.BlockIntPublisher;
 import com.kazusa.minecraft_ros2.ros2.BlockBoolSubscriber;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,12 +38,12 @@ public class RedstonePubSubBlock extends Block implements EntityBlock {
     // ワールド中に現在存在する座標を保持
     private static final Set<BlockPos> INSTANCES = ConcurrentHashMap.newKeySet();
 
-    private BlockBoolPublisher publisher;
+    private BlockIntPublisher publisher;
     private BlockBoolSubscriber subscriber;
 
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new NamedBlockEntity(pos, state);
+        return new RedStonePubSubBlockEntity(pos, state);
     }
 
     public RedstonePubSubBlock() {
@@ -108,7 +108,7 @@ public class RedstonePubSubBlock extends Block implements EntityBlock {
             if (!world.isClientSide) {
                 ServerPlayer serverPlayer = (ServerPlayer) player;
                 BlockEntity be = world.getBlockEntity(pos);
-                if (be instanceof NamedBlockEntity named) {
+                if (be instanceof RedStonePubSubBlockEntity named) {
                     // MenuProvider（= NamedScreenHandlerFactory）として開く
                     var consumer = (Consumer<FriendlyByteBuf>) buf -> {
                         buf.writeBlockPos(pos);  // ブロック位置を送信
@@ -180,10 +180,10 @@ public class RedstonePubSubBlock extends Block implements EntityBlock {
             publisher.shutdown();
             publisher = null;
         }
-        publisher = new BlockBoolPublisher(pos, namespace);
+        publisher = new BlockIntPublisher(pos, namespace);
     }
 
-    public BlockBoolPublisher getPublisher() {
+    public BlockIntPublisher getPublisher() {
         return publisher;
     }
 

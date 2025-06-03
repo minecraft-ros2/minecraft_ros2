@@ -11,14 +11,10 @@ public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
         DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, minecraft_ros2.MOD_ID);
 
-    /**
-     * RegistryObject for our NamedBlockEntity type.
-     * The factory is NamedBlockEntity::new and the valid block is RedstoneToggleBlock (or specific class).
-     */
-    public static final RegistryObject<BlockEntityType<NamedBlockEntity>> NAMED_BLOCK_ENTITY =
-        BLOCK_ENTITIES.register("named_block_entity",
+    public static final RegistryObject<BlockEntityType<RedStonePubSubBlockEntity>> RED_STONE_PUB_SUB_BLOCK_ENTITY =
+        BLOCK_ENTITIES.register("red_stone_pub_sub_block_entity",
             () -> BlockEntityType.Builder
-                .of(NamedBlockEntity::new, ModBlocks.REDSTONE_PUB_SUB.get())
+                .of(RedStonePubSubBlockEntity::new, ModBlocks.REDSTONE_PUB_SUB.get())
                 .build(null)
         );
 
