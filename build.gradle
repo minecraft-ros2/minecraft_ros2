@@ -3,6 +3,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 version = mod_version
@@ -115,6 +116,11 @@ dependencies {
         version { strictly '5.0.4' }
     }
     implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.6:4.5.4.1")
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    configurations = [project.configurations.runtimeClasspath]
 }
 
 
