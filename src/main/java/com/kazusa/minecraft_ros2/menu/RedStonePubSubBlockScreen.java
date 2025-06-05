@@ -12,13 +12,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import com.mojang.blaze3d.platform.InputConstants;
 
-public class NamedBlockScreen extends AbstractContainerScreen<NamedBlockContainer> {
+public class RedStonePubSubBlockScreen extends AbstractContainerScreen<RedStonePubSubBlockContainer> {
     private static final ResourceLocation BG = new ResourceLocation(
         minecraft_ros2.MOD_ID, "textures/gui/named_block_bg.png"
     );
     private EditBox nameField;
 
-    public NamedBlockScreen(NamedBlockContainer cont, Inventory inv, Component title) {
+    public RedStonePubSubBlockScreen(RedStonePubSubBlockContainer cont, Inventory inv, Component title) {
         super(cont, inv, title);
         this.imageWidth = 176;
         this.imageHeight = 80;

@@ -1,6 +1,7 @@
 package com.kazusa.minecraft_ros2.ros2;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.server.level.ServerLevel;
@@ -11,21 +12,21 @@ import org.ros2.rcljava.node.BaseComposableNode;
 import org.ros2.rcljava.publisher.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import std_msgs.msg.Bool;
+import std_msgs.msg.Int32;
 import java.util.concurrent.TimeUnit;
 import java.lang.Boolean;
 
-public class BlockBoolPublisher extends BaseComposableNode {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BlockBoolPublisher.class);
+public class BlockIntPublisher extends BaseComposableNode {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlockIntPublisher.class);
 
-    private final Publisher<Bool> publisher;
+    private final Publisher<Int32> publisher;
 
     private BlockPos targetPos;
 
     private long delta_time = 10;
 
-    public BlockBoolPublisher(BlockPos pos, String namespace) {
-        super("minecraft_block_bool_subscriber");
+    public BlockIntPublisher(BlockPos pos, String namespace) {
+        super("minecraft_block_int_subscriber");
         this.targetPos = pos;
         String topicName = "output";
         if (namespace != null && !namespace.isEmpty()) {
@@ -37,10 +38,10 @@ public class BlockBoolPublisher extends BaseComposableNode {
             }
             topicName = namespace + topicName;
         }
-        this.publisher = this.node.<Bool>createPublisher(
-            Bool.class, topicName);
+        this.publisher = this.node.<Int32>createPublisher(
+            Int32.class, topicName);
         node.createWallTimer(delta_time, TimeUnit.MILLISECONDS, this::publishData);
-        LOGGER.info("BlockBoolPublisher initialized and publishing to '{}' topic", topicName);
+        LOGGER.info("BlockIntPublisher initialized and publishing to '{}' topic", topicName);
     }
 
     private void publishData() {
@@ -59,10 +60,20 @@ public class BlockBoolPublisher extends BaseComposableNode {
             }
 
             BlockState blockState = world.getBlockState(targetPos);
-            var powered = blockState.getValue(BlockStateProperties.POWERED);
-            Bool msg = new Bool();
-            msg.setData((Boolean)powered);
+            int maxSignal = blockState.getValue(BlockStateProperties.POWERED) ? 15 : 0;
+            for (Direction direction : Direction.values()) {
+                BlockPos adjacentPos = targetPos.relative(direction);
+                BlockState adjacentState = world.getBlockState(adjacentPos);
+                int signal = adjacentState.getSignal(world, adjacentPos, direction);
+                if (signal > maxSignal) {
+                    maxSignal = signal;
+                }
+            }
+
+            Int32 msg = new Int32();
+            msg.setData(maxSignal);
             publisher.publish(msg);
+            LOGGER.debug("Published signal strength {}", maxSignal);
         });
     }
 
