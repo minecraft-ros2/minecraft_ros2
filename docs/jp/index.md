@@ -12,9 +12,9 @@ hero:
     - theme: alt
       text: ドキュメント
       link: /jp/documentation/doc_sensors
-    # - theme: alt
-    #   text: ROS 2トレーニング
-    #   link: /jp/index
+    - theme: alt
+      text: ROS 2チュートリアル
+      link: /jp/tutorial/index
 
 features:
   - icon: ⛰️
