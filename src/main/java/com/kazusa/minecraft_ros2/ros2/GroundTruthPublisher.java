@@ -38,9 +38,9 @@ public class GroundTruthPublisher extends BaseComposableNode {
 
             Pose pose = new Pose();
 
-            pose.getPosition().setX(player.getX());
-            pose.getPosition().setY(player.getY());
-            pose.getPosition().setZ(player.getZ());
+            pose.getPosition().setX(player.getZ());
+            pose.getPosition().setY(player.getX());
+            pose.getPosition().setZ(player.getY());
 
             float yaw = -player.getYRot();
             float pitch = player.getXRot();
