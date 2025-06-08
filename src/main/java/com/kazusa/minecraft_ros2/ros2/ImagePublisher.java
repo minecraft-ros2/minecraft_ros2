@@ -1,36 +1,61 @@
 package com.kazusa.minecraft_ros2.ros2;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.ros2.rcljava.Time;
 import org.ros2.rcljava.node.BaseComposableNode;
 import org.ros2.rcljava.publisher.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sensor_msgs.msg.Image;
-import org.ros2.rcljava.Time;
-import java.nio.ByteBuffer;
+
 import java.util.concurrent.CompletableFuture;
 
 public class ImagePublisher extends BaseComposableNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(ImagePublisher.class);
 
-    private final Publisher<Image> publisher;
+    private static final int WIDTH = 1920;
+    private static final int HEIGHT = 1080;
+
     private final Minecraft minecraft;
+    private final Publisher<Image> publisher;
+    private final NativeImage rgbTexture, depthTexture;
+    private final RenderTarget renderTarget;
     private Image rosImage;
 
     public ImagePublisher() {
         super("minecraft_image_publisher");
-        publisher = this.node.createPublisher(Image.class, "/player/image_raw");
         minecraft = Minecraft.getInstance();
-        LOGGER.info("ImagePublisher initialized and publishing to '/player/image_raw'");
+        publisher = this.node.createPublisher(Image.class, "/player/image_raw");
+        rgbTexture = new NativeImage(NativeImage.Format.RGBA, WIDTH, HEIGHT, false);
+        depthTexture = new NativeImage(NativeImage.Format.LUMINANCE, WIDTH, HEIGHT, false);
+        LOGGER.info("ImagePublisher initialized and publishing to '/player/image_raw'" + rgbTexture);
+        renderTarget = new TextureTarget(WIDTH, HEIGHT, true, false);
     }
 
     public void captureAndPublish() {
-        try {
-            int width = minecraft.getMainRenderTarget().width;
-            int height = minecraft.getMainRenderTarget().height;
+        if (!RenderSystem.isOnRenderThread()) {
+            RenderSystem.recordRenderCall(this::captureAndPublish);
+            return;
+        }
+        if (minecraft.level == null) {
+            return;
+        }
 
+        try {
+            int width = renderTarget.width;
+            int height = renderTarget.height;
+
+            minecraft.gameRenderer.setRenderBlockOutline(false);
+            minecraft.gameRenderer.setPanoramicMode(true);
+            minecraft.levelRenderer.graphicsChanged();
+
+            renderTarget.bindWrite(true);
+            minecraft.gameRenderer.renderLevel(1.0F, 0L);
+            
             // 100x200くらいになるように調整
 
             int scale = 2;
@@ -38,8 +63,13 @@ public class ImagePublisher extends BaseComposableNode {
             int scaledHeight = height / scale;
 
             // 画面全体のRGBAピクセルを取得
-            ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
-            GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+            RenderSystem.bindTexture(renderTarget.getColorTextureId());
+            rgbTexture.downloadTexture(0, true);
+            RenderSystem.bindTexture(renderTarget.getDepthTextureId());
+            renderTarget.blitToScreen(WIDTH, HEIGHT);
+            depthTexture.downloadDepthBuffer(0F);
+
+            int[] textureData = rgbTexture.getPixelsRGBA();
 
             // RGBAからRGBに変換しつつ縮小
             byte[] rgbData = new byte[scaledWidth * scaledHeight * 3];
@@ -47,12 +77,12 @@ public class ImagePublisher extends BaseComposableNode {
                 for (int x = 0; x < scaledWidth; x++) {
                     int srcX = x * scale;
                     int srcY = y * scale;
-                    int srcIndex = ((height - 1 - srcY) * width + srcX) * 4;
+                    int srcIndex = ((height - 1 - srcY) * width + srcX);
                     int dstIndex = (y * scaledWidth + x) * 3;
 
-                    rgbData[dstIndex] = buffer.get(srcIndex);         // R
-                    rgbData[dstIndex + 1] = buffer.get(srcIndex + 1); // G
-                    rgbData[dstIndex + 2] = buffer.get(srcIndex + 2); // B
+                    rgbData[dstIndex] = (byte) (textureData[srcIndex]);
+                    rgbData[dstIndex + 1] = (byte) (textureData[srcIndex] >> 8); // G
+                    rgbData[dstIndex + 2] = (byte) (textureData[srcIndex] >> 16); // B
                 }
             }
 
@@ -73,6 +103,11 @@ public class ImagePublisher extends BaseComposableNode {
 
         } catch (Exception e) {
             LOGGER.error("Failed to capture and publish image", e);
+        } finally {
+            minecraft.gameRenderer.setRenderBlockOutline(true);
+            minecraft.gameRenderer.setPanoramicMode(false);
+            minecraft.levelRenderer.graphicsChanged();
+            minecraft.getMainRenderTarget().bindWrite(true);
         }
     }
 }
