@@ -36,6 +36,7 @@ public final class ROS2Manager {
     private PlayerStatusPublisher playerStatusPublisher;
 
     private SpawnEntityService spawnEntityService;
+    private DigBlockService digBlockService;
     
     private ROS2Manager() {
         // Private constructor for singleton
@@ -88,6 +89,7 @@ public final class ROS2Manager {
 
 
                 spawnEntityService = new SpawnEntityService();
+                digBlockService = new DigBlockService();
                 
                 // Create and start executor thread for ROS2 spin
                 executorService = Executors.newSingleThreadExecutor(r -> {
@@ -108,6 +110,7 @@ public final class ROS2Manager {
                             RCLJava.spinSome(groundTruthPublisher);
 
                             RCLJava.spinSome(spawnEntityService);
+                            RCLJava.spinSome(digBlockService);
 
                             Level world = Minecraft.getInstance().level;
                             if (world != null) {
