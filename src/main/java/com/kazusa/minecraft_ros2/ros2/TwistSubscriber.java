@@ -63,19 +63,18 @@ public class TwistSubscriber extends BaseComposableNode {
 
                 double dy = player.getDeltaMovement().y(); // preserve current vertical motion
 
-                // ジャンプ処理（ジャンプ中でなければジャンプ）
-                // ジャンプ処理（ジャンプ中でなければジャンプ）
+                // Jump processing (jump if not already jumping)
                 if (lastLinearZ > 0.1 && player.verticalCollision) {
-                    dy = 0.42; // Minecraft のジャンプ速度
+                    dy = 0.42; // Minecraft jump speed
                 }
 
 
-                // deltaMovementを使って自然な移動にする
+                // Use deltaMovement for natural movement
                 player.setDeltaMovement(dx, dy, dz);
-                player.hasImpulse = true; // deltaMovementを使う場合にはtrueにする
+                player.hasImpulse = true; // Set to true when using deltaMovement
             }
 
-            // 回転処理（なめらかにする）
+            // Rotation processing (smooth)
             if (Math.abs(lastAngularZ) > 0.1 || Math.abs(lastAngularY) > 0.1) {
                 float rotZ = (float)(-lastAngularZ * speedFactor * 10);
                 float rotY = (float)(lastAngularY * speedFactor * 10);
