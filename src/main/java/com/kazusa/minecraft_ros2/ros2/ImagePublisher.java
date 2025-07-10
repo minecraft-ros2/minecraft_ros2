@@ -31,17 +31,17 @@ public class ImagePublisher extends BaseComposableNode {
             int width = minecraft.getMainRenderTarget().width;
             int height = minecraft.getMainRenderTarget().height;
 
-            // 100x200くらいになるように調整
+            // Adjust to approximately 100x200
 
             int scale = 2;
             int scaledWidth = width / scale;
             int scaledHeight = height / scale;
 
-            // 画面全体のRGBAピクセルを取得
+            // Get RGBA pixels from the entire screen
             ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
             GL11.glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
 
-            // RGBAからRGBに変換しつつ縮小
+            // Convert from RGBA to RGB while scaling down
             byte[] rgbData = new byte[scaledWidth * scaledHeight * 3];
             for (int y = 0; y < scaledHeight; y++) {
                 for (int x = 0; x < scaledWidth; x++) {
@@ -56,7 +56,7 @@ public class ImagePublisher extends BaseComposableNode {
                 }
             }
 
-            // ROS2 Imageメッセージ作成
+            // Create ROS2 Image message
             if (rosImage == null) {
                 rosImage = new Image();
             }
@@ -68,7 +68,7 @@ public class ImagePublisher extends BaseComposableNode {
             rosImage.setStep(scaledWidth * 3);
             rosImage.setData(rgbData);
 
-            // 非同期で送信（メインスレッドの負荷軽減）
+            // Send asynchronously (reduce main thread load)
             CompletableFuture.runAsync(() -> publisher.publish(rosImage));
 
         } catch (Exception e) {
