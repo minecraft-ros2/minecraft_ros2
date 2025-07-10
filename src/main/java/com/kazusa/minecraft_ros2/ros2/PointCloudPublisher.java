@@ -458,7 +458,7 @@ public class PointCloudPublisher extends BaseComposableNode {
     }
 
     /**
-     * Entity の平均色を取得
+     * Get average color of Entity
      */
 
     private void preloadAllEntityTextures() {
@@ -470,7 +470,7 @@ public class PointCloudPublisher extends BaseComposableNode {
                 if (loc == null || loc.getPath().startsWith("textures/atlas/")) return;
                 textureColorCache.computeIfAbsent(loc, this::computeAverageColor);
             } catch (Exception e) {
-                LOGGER.warn("fail preload: {}", e.toString());
+                LOGGER.warn("Failed to preload: {}", e.toString());
             }
         });
     }
@@ -492,7 +492,7 @@ public class PointCloudPublisher extends BaseComposableNode {
             if (count == 0) return new float[]{1f,1f,1f};
             return new float[]{r / (float)(count * 255), g / (float)(count * 255), b / (float)(count * 255)};
         } catch (IOException e) {
-            LOGGER.warn("Fail load texture {}: {}", loc, e);
+            LOGGER.warn("Failed to load texture {}: {}", loc, e);
             return new float[]{1f,1f,1f};
         }
     }

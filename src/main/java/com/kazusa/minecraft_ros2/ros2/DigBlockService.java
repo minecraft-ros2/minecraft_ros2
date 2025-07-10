@@ -52,7 +52,7 @@ public class DigBlockService extends BaseComposableNode {
                 "dig_block/progress"
             );
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("サービス生成に失敗", e);
+            throw new RuntimeException("Failed to create service", e);
         }
     }
 
