@@ -32,6 +32,7 @@ public final class ROS2Manager {
     private PointCloudPublisher pointCloudPublisher;
     private IMUPublisher imuPublisher;
     private GroundTruthPublisher groundTruthPublisher;
+    private SurroundingBlockArrayPublisher surroundingBlockArrayPublisher;
     private LivingEntitiesPublisher livingEntitiesPublisher;
     private PlayerStatusPublisher playerStatusPublisher;
 
@@ -78,6 +79,7 @@ public final class ROS2Manager {
                 pointCloudPublisher = new PointCloudPublisher();
                 imuPublisher = new IMUPublisher();
                 groundTruthPublisher = new GroundTruthPublisher();
+                surroundingBlockArrayPublisher = new SurroundingBlockArrayPublisher();
 
                 if (Config.COMMON.enableDebugDataStreaming.get()) {
                     LOGGER.info("Debug data stream enabled");
@@ -108,6 +110,7 @@ public final class ROS2Manager {
                             RCLJava.spinSome(pointCloudPublisher);
                             RCLJava.spinSome(imuPublisher);
                             RCLJava.spinSome(groundTruthPublisher);
+                            RCLJava.spinSome(surroundingBlockArrayPublisher);
 
                             RCLJava.spinSome(spawnEntityService);
                             RCLJava.spinSome(digBlockService);
