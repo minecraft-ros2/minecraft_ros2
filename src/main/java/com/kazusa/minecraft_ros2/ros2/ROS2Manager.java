@@ -35,7 +35,6 @@ public final class ROS2Manager {
     private LivingEntitiesPublisher livingEntitiesPublisher;
     private PlayerStatusPublisher playerStatusPublisher;
 
-    private SpawnEntityService spawnEntityService;
     private DigBlockService digBlockService;
     
     private ROS2Manager() {
@@ -88,7 +87,6 @@ public final class ROS2Manager {
                 }
 
 
-                spawnEntityService = new SpawnEntityService();
                 digBlockService = new DigBlockService();
                 
                 // Create and start executor thread for ROS2 spin
@@ -109,7 +107,6 @@ public final class ROS2Manager {
                             RCLJava.spinSome(imuPublisher);
                             RCLJava.spinSome(groundTruthPublisher);
 
-                            RCLJava.spinSome(spawnEntityService);
                             RCLJava.spinSome(digBlockService);
 
                             Level world = Minecraft.getInstance().level;
@@ -131,13 +128,7 @@ public final class ROS2Manager {
                                 }
                             }
 
-                            if (spawnEntityService.spawnedEntities != null) {
-                                for (DynamicModelEntity entity : spawnEntityService.spawnedEntities) {
-                                    if (entity.getRobotTwistSubscriber() != null) {
-                                        RCLJava.spinSome(entity.getRobotTwistSubscriber());
-                                    }
-                                }
-                            }
+                            
                             //captureAndPublishImage
                             
                             if (livingEntitiesPublisher != null) {
@@ -201,13 +192,6 @@ public final class ROS2Manager {
         }
         if (twistSubscriber != null) {
             twistSubscriber.applyPlayerMovement();
-        }
-        if (spawnEntityService.spawnedEntities != null) {
-            for (DynamicModelEntity entity : spawnEntityService.spawnedEntities) {
-                if (entity.getRobotTwistSubscriber() != null) {
-                    entity.getRobotTwistSubscriber().applyEntityMovement();
-                }
-            }
         }
     }
     
