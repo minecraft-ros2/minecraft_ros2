@@ -12,7 +12,7 @@ export default defineConfig({
             nav: [
                 { text: 'Home', link: `/`},
                 { text: 'Document', link: `/documentation/doc_sensors`},
-                // { text: 'ROS2 Training', link: `/`}
+                { text: 'ROS 2 Tutorial', link: `/tutorial/index`}
             ],
             sidebar: {
               "/documentation/": [
@@ -33,6 +33,17 @@ export default defineConfig({
                     { text: 'Command Execution', link: './doc_cmd' },
                   ]
                 }
+            ],
+            "/tutorial/": [
+                {
+                  text: 'Tutorial',
+                  items: [
+                    { text: 'Index', link: '/tutorial/index'},
+                    { text: 'topic', link: '/tutorial/00_topic'},
+                    { text: 'rviz2', link: '/tutorial/01_rviz2'},
+                    { text: 'Control Player', link: '/tutorial/02_control_player'},
+                  ]
+                }
             ]
             }
         }
@@ -45,7 +56,7 @@ export default defineConfig({
             nav: [
                 { text: 'ホーム', link: `jp/index`},
                 { text: 'ドキュメント', link: `/jp/documentation/doc_sensors`},
-                // { text: 'ROS2トレーニング', link: `jp/index`}
+                { text: 'ROS 2チュートリアル', link: `jp/tutorial/index`}
             ],
             sidebar: {
               "/jp/documentation/": [
@@ -64,6 +75,17 @@ export default defineConfig({
                     { text: 'プレイヤー操作', link: './doc_player' },
                     { text: 'デバッグメッセージ', link: './doc_debug_msgs' },
                     { text: 'コマンド実行', link: './doc_cmd' },
+                  ]
+                }
+              ],
+              "/jp/tutorial/": [
+                {
+                  text: 'チュートリアル',
+                  items: [
+                    { text: '目次', link: '/jp/tutorial/index'},
+                    { text: 'トピック', link: '/jp/tutorial/00_topic'},
+                    { text: 'RViz2', link: '/jp/tutorial/01_rviz2'},
+                    { text: 'プレイヤー操作', link: '/jp/tutorial/02_control_player'},
                   ]
                 }
               ]
