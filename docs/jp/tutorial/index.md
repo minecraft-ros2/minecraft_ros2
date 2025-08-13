@@ -11,8 +11,12 @@
     - LiDARの点群データの可視化
 
 1. **[topicとは](/jp/tutorial/01_topic)**
+    - トピック説明
+    - コマンド説明
 
 2. **[Player操作](/jp/tutorial/02_control_player)**
+    - pythonパッケージ作成
+    - トピックの送信
 
 3. **[周囲のブロックを破壊](/jp/tutorial/03_break_block)**
     - 周囲のブロックを取得
