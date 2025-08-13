@@ -60,7 +60,12 @@ public class ImagePublisher extends BaseComposableNode {
             if (rosImage == null) {
                 rosImage = new Image();
             }
-            rosImage.getHeader().setFrameId("player");
+            String playerName = minecraft
+                .getConnection()
+                .getPlayerInfo(player.getUUID())
+                .getProfile()
+                .getName();
+            rosImage.getHeader().setFrameId(playerName);
             rosImage.getHeader().setStamp(Time.now());
             rosImage.setWidth(scaledWidth);
             rosImage.setHeight(scaledHeight);

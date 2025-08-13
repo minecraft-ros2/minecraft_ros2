@@ -418,8 +418,13 @@ public class PointCloudPublisher extends BaseComposableNode {
         if (msg == null) {
             msg = new PointCloud2();
         }
+        String playerName = minecraft
+            .getConnection()
+            .getPlayerInfo(minecraft.player.getUUID())
+            .getProfile()
+            .getName();
         msg.getHeader().setStamp(Time.now());
-        msg.getHeader().setFrameId("player");
+        msg.getHeader().setFrameId(playerName);
 
         int pointCount = results.size();
         msg.setHeight(1);

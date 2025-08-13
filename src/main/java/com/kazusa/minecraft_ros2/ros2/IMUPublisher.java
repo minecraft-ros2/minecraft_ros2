@@ -60,8 +60,14 @@ public class IMUPublisher extends BaseComposableNode  {
             double accY = ax * Math.cos(currentYaw) - az * Math.sin(currentYaw);
             double accZ = ay - 9.80665;
 
+            String playerName = minecraft
+                .getConnection()
+                .getPlayerInfo(player.getUUID())
+                .getProfile()
+                .getName();
+
             message.getHeader().setStamp(Time.now());
-            message.getHeader().setFrameId("player");
+            message.getHeader().setFrameId(playerName);
             message.getLinearAcceleration().setX(accX);
             message.getLinearAcceleration().setY(accY);
             message.getLinearAcceleration().setZ(accZ);
