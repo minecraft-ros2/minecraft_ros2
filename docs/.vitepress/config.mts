@@ -39,11 +39,9 @@ export default defineConfig({
                   text: 'Tutorial',
                   items: [
                     { text: 'Index', link: '/tutorial/index'},
-                    { text: 'what is ros2?', link: '/tutorial/00_what_is_ros2'},
-                    { text: 'topic', link: '/tutorial/01_topic'},
-                    { text: 'rviz2', link: '/tutorial/02_rviz2'},
-                    // { text: 'tf', link: '/tutorial/03_tf'},
-                    // { text: 'service', link: '/tutorial/04_service'}
+                    { text: 'topic', link: '/tutorial/00_topic'},
+                    { text: 'rviz2', link: '/tutorial/01_rviz2'},
+                    { text: 'Control Player', link: '/tutorial/02_control_player'},
                   ]
                 }
             ]
@@ -85,11 +83,9 @@ export default defineConfig({
                   text: 'チュートリアル',
                   items: [
                     { text: '目次', link: '/jp/tutorial/index'},
-                    { text: 'ROS 2とは？', link: '/jp/tutorial/00_what_is_ros2'},
-                    { text: 'トピック', link: '/jp/tutorial/01_topic'},
-                    { text: 'rviz2', link: '/jp/tutorial/02_rviz2'},
-                    // { text: 'tf', link: '/jp/tutorial/03_tf'},
-                    // { text: 'サービス', link: '/jp/tutorial/04_service'}
+                    { text: 'トピック', link: '/jp/tutorial/00_topic'},
+                    { text: 'RViz2', link: '/jp/tutorial/01_rviz2'},
+                    { text: 'プレイヤー操作', link: '/jp/tutorial/02_control_player'},
                   ]
                 }
               ]

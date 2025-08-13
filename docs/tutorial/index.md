@@ -1,30 +1,27 @@
-# ROS 2 Tutorial
-In this tutorial, you will learn the basic concepts of ROS 2 in a fun and practical way using `minecraft_ros2`.
+# ROS 2チュートリアル
+このチュートリアルでは、`minecraft_ros2`でminecraftを自動で操作することでROS 2の実践的な技術の習得ができます。
 
-Each step is structured to be easy to understand, even for beginners.
+このチュートリアルは ROS 2 Documentation の`Intermediate`の`Writing an action server and client (Python)`まで理解した人向けのものとなっています。
 
 ---
 
-## Table of Contents
-0. **[What is ROS 2?](/jp/tutorial/00_what_is_ros2)**
-    - Run basic ROS 2 commands in the terminal
-    - Set up the minecraft_ros2 environment
-    - Confirm the existence of minecraft_ros2
+## 目次
+0. **[topicとは](/jp/tutorial/00_topic)**
+    - トピック説明
+    - コマンド説明
 
-1. **[Topic](/jp/tutorial/01_topic)**
-    - Understand the basics of ROS 2 topics and messages
-    - Control the Minecraft player with Twist messages
-    - Check player data output from Minecraft
+1. **[RViz2](/jp/tutorial/01_rviz2)**
+    - カメラ画像の可視化
+    - LiDARの点群データの可視化
 
-2. **[RViz2](/jp/tutorial/02_rviz2)**
-    - Visualize camera images
-    - Visualize LiDAR point cloud data
+2. **[Player操作](/jp/tutorial/02_control_player)**
+    - pythonパッケージ作成
+    - トピックの送信
 
-3. **[TF](/jp/tutorial/03_tf)**
-    - Learn the basics of coordinate frames
-    - Perform coordinate transformations using TF frames
-    - Visualize frames with RViz2
+3. **[周囲のブロックを破壊](/jp/tutorial/03_break_block)**
+    - 周囲のブロックを取得
+    - 破壊対象のブロックを破壊
 
-4. **[Service](/jp/tutorial/04_service)**
-    - Understand services
-    - Execute Minecraft commands
+4. **[周囲のモブを攻撃](/jp/tutorial/04_attack_mod)**
+    - 周囲のモブを取得
+    - 攻撃対象のモブを攻撃

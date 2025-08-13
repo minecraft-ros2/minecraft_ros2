@@ -6,13 +6,13 @@
 ---
 
 ## 目次
-0. **[RViz2](/jp/tutorial/00_rviz2)**
-    - カメラ画像の可視化
-    - LiDARの点群データの可視化
-
-1. **[topicとは](/jp/tutorial/01_topic)**
+0. **[topicとは](/jp/tutorial/00_topic)**
     - トピック説明
     - コマンド説明
+
+1. **[RViz2](/jp/tutorial/01_rviz2)**
+    - カメラ画像の可視化
+    - LiDARの点群データの可視化
 
 2. **[Player操作](/jp/tutorial/02_control_player)**
     - pythonパッケージ作成
