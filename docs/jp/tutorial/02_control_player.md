@@ -24,13 +24,12 @@ ros2 pkg create --build-type ament_python minecraft_ros2_tutorial
 ### package.xml
 package.xmlにはパッケージの情報を記入します。
 
-今回は依存関係で minecraft_msgs や geometry_msgs が必要なのでそれを追記します
+今回は依存関係で geometry_msgs が必要なのでそれを追記します
 
 `<test_depend>` と `<export>` の間に以下を書き足してください。
 
 ```xml
 <depend>geometry_msgs</depend>
-<depend>minecraft_msgs</depend>
 ```
 
 また、descriptionやmaintainer、licenseタグも編集が必要なので編集します。
@@ -44,12 +43,11 @@ setup.py はPythonに関する設定を記入します。
 entry_points={
         'console_scripts': [
                 'player_controller = minecraft_ros2_tutorial.player_controller:main',
-                'status_viewer = minecraft_ros2_tutorial.status_viewer:main',
         ],
 },
 ```
 
-## 2. player_controller
+## 2. Pythonコードを書く
 `minecraft_ros2_tutorial/player_controller.py` を作成し、以下のコードを記入します。
 
 ```py
