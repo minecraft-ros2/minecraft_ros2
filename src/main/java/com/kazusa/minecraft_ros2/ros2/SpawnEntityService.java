@@ -52,7 +52,7 @@ public class SpawnEntityService  extends BaseComposableNode {
                     SpawnEntity_Response response)
                     -> this.handleService(header, request, response));
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("サービス生成に失敗", e);
+            throw new RuntimeException("Failed to create service", e);
         }
         LOGGER.info("SpawnEntityService initialized and listening on '/add_two_ints'");
     }
