@@ -61,7 +61,7 @@ public class SpawnEntityService  extends BaseComposableNode {
             final SpawnEntity_Request request,
             final SpawnEntity_Response response) {
         String modelName = request.getName();
-        String modelUri = request.getUri();
+        String modelUri = request.getEntityResource().getUri();
         //String modelResourceString = request.getResourceString();
         if (modelName == null || modelName.isEmpty() || modelUri == null || modelUri.isEmpty()) {
             LOGGER.error("Invalid request: " + request);
