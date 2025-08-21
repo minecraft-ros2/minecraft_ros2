@@ -1,9 +1,9 @@
-# control player
-Pythonを使いプレーヤーを遠隔操縦してみましょう
+# Control Player
+Pythonを使いプレーヤーを遠隔操縦してみましょう。
 
 このページでは以下の内容を学びます。
 - パッケージ、ノード作成
-- Pythonパブリッシャー、サブスクライバー作成
+- Pythonパブリッシャー作成
 
 ## 1. パッケージを作成する
 適当な作業場所に移動します。
@@ -42,13 +42,13 @@ setup.py はPythonに関する設定を記入します。
 ```py
 entry_points={
         'console_scripts': [
-                'player_controller = minecraft_ros2_tutorial.player_controller:main',
+                'control_player = minecraft_ros2_tutorial.control_player:main',
         ],
 },
 ```
 
 ## 2. Pythonコードを書く
-`minecraft_ros2_tutorial/player_controller.py` を作成し、以下のコードを記入します。
+`minecraft_ros2_tutorial/control_player.py` を作成し、以下のコードを記入します。
 
 ```py
 import rclpy
@@ -57,20 +57,20 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 
 
-class PlayerController(Node):
+class ControlPlayer(Node):
     def __init__(self):
-        super().__init__('player_controller')
-        self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
+        super().__init__('control_player') # control_playerという名前のNodeを作成
+        self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10) # /cmd_vel のパブリッシャーを作成
         timer_period = 0.01
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.i = 0
+        self.timer = self.create_timer(timer_period, self.timer_callback) # 0.01秒ごとに関数 timer_callback を実行
         self.speed = 1.0
-        print("Player Controller Node Initialized. Use wasd keys to move, Space to jump, WASD for rotation.")
+        print("Control Player Node Initialized. Use wasd keys to move, Space to jump, WASD for rotation.")
 
     def timer_callback(self):
         key = input("enter key (wasd,space,WASD) >>>")
-        twist = Twist()
+        twist = Twist() # メッセージ作成
 
+        # 値を格納
         if 'w' in key:
             twist.linear.x += self.speed
         if 's' in key:
@@ -90,17 +90,18 @@ class PlayerController(Node):
         if 'D' in key:
             twist.angular.z -= self.speed
 
-        self.publisher_.publish(twist)
+        self.publisher_.publish(twist) # メッセージをパブリッシュ
 
 
 def main(args=None):
-    rclpy.init(args=args)
+    rclpy.init(args=args) # ROS 2 初期化
 
-    player_controller = PlayerController()
+    control_player = ControlPlayer()
 
-    rclpy.spin(player_controller)
+    rclpy.spin(control_player) # spinで無限ループスタート
 
-    player_controller.destroy_node()
+    # 終了時に以下実行
+    control_player.destroy_node()
     rclpy.shutdown()
 
 
@@ -117,7 +118,7 @@ if __name__ == '__main__':
 初回のみ `source install/setup.bash` の実行が必要です。
 
 ```bash
-ros2 run minecraft_ros2_tutorial player_controller
+ros2 run minecraft_ros2_tutorial control_player
 ```
 
 これでマイクラ内のプレーヤーの移動がROS 2から遠隔でできるようになりました！
