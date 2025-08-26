@@ -86,6 +86,7 @@ export default defineConfig({
                     { text: 'トピック', link: '/jp/tutorial/00_topic'},
                     { text: 'RViz2', link: '/jp/tutorial/01_rviz2'},
                     { text: 'プレイヤー操作', link: '/jp/tutorial/02_control_player'},
+                    { text: '自己位置推定', link: '/jp/tutorial/05_localization'},
                   ]
                 }
               ]
