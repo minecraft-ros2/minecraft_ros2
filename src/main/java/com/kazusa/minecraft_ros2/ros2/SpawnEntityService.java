@@ -54,20 +54,45 @@ public class SpawnEntityService  extends BaseComposableNode {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Failed to create service", e);
         }
-        LOGGER.info("SpawnEntityService initialized and listening on '/add_two_ints'");
+        LOGGER.info("SpawnEntityService initialized and listening on '/spawn_entity'");
     }
 
     private void handleService(final RMWRequestId header,
             final SpawnEntity_Request request,
             final SpawnEntity_Response response) {
         String modelName = request.getName();
-        String modelUri = request.getUri();
-        //String modelResourceString = request.getResourceString();
+
+        // simulation_interfaces/SpawnEntity は入れ子の Resource を持つ
+        String modelUri = null;
+        String resourceString = null;
+        if (request.getEntityResource() != null) {
+            modelUri = request.getEntityResource().getUri();
+            resourceString = request.getEntityResource().getResourceString();
+        }
+
+        // uri が空で resource_string がある場合は一時ファイルを作って既存フローに載せる
+        if ((modelUri == null || modelUri.isEmpty()) &&
+            (resourceString != null && !resourceString.isEmpty())) {
+            try {
+                Path tmp = Files.createTempFile("spawn_entity_", ".geo.json");
+                Files.writeString(tmp, resourceString);
+                modelUri = tmp.toString();
+                LOGGER.info("resource_string を一時ファイルに書き出しました: " + modelUri);
+            } catch (IOException e) {
+                LOGGER.error("resource_string の保存に失敗", e);
+                Result errorResult = new Result();
+                errorResult.setResult(Byte.valueOf((byte) Result.RESULT_OPERATION_FAILED));
+                errorResult.setErrorMessage("Failed to persist resource_string to a temp file");
+                response.setResult(errorResult);
+                return;
+            }
+        }
+
         if (modelName == null || modelName.isEmpty() || modelUri == null || modelUri.isEmpty()) {
             LOGGER.error("Invalid request: " + request);
             Result errorResult = new Result();
-            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
-            errorResult.setErrorMessage("Invalid request: modelName or modelUri is empty");
+            errorResult.setResult(Byte.valueOf((byte) Result.RESULT_OPERATION_FAILED)); // Failure code
+            errorResult.setErrorMessage("Invalid request: modelName or (uri/resource_string) is empty");
             response.setResult(errorResult);
             return;
         }
@@ -82,7 +107,7 @@ public class SpawnEntityService  extends BaseComposableNode {
         if (!isUnique) {
             LOGGER.error("Entity with name '" + modelName + "' already exists.");
             Result errorResult = new Result();
-            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setResult(Byte.valueOf((byte) Result.RESULT_OPERATION_FAILED)); // Failure code
             errorResult.setErrorMessage("Entity with name '" + modelName + "' already exists.");
             response.setResult(errorResult);
             return;
@@ -95,7 +120,7 @@ public class SpawnEntityService  extends BaseComposableNode {
         if (modelUri.startsWith("http://") || modelUri.startsWith("https://")) {
             LOGGER.error("Remote URIs are not supported: " + modelUri);
             Result errorResult = new Result();
-            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setResult(Byte.valueOf((byte) Result.RESULT_OPERATION_FAILED)); // Failure code
             errorResult.setErrorMessage("Remote URIs are not supported: " + modelUri);
             response.setResult(errorResult);
             return;
@@ -104,7 +129,7 @@ public class SpawnEntityService  extends BaseComposableNode {
         if (!modelUri.toLowerCase().endsWith(".geo.json")) {
             LOGGER.error("Invalid model URI, must end with .geo.json: " + modelUri);
             Result errorResult = new Result();
-            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setResult(Byte.valueOf((byte) Result.RESULT_OPERATION_FAILED)); // Failure code
             errorResult.setErrorMessage("Invalid model URI, must end with .geo.json: " + modelUri);
             response.setResult(errorResult);
             return;
@@ -115,7 +140,7 @@ public class SpawnEntityService  extends BaseComposableNode {
         if (!Files.exists(jsonPath)) {
             LOGGER.error("Model URI does not exist: " + modelUri);
             Result errorResult = new Result();
-            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setResult(Byte.valueOf((byte) Result.RESULT_OPERATION_FAILED)); // Failure code
             errorResult.setErrorMessage("Model URI does not exist: " + modelUri);
             response.setResult(errorResult);
             return;
@@ -125,7 +150,7 @@ public class SpawnEntityService  extends BaseComposableNode {
             if (!content.contains("\"format_version\"") || !content.contains("\"minecraft:geometry\"")) {
                 LOGGER.error("Invalid geometry JSON format: " + modelUri);
                 Result errorResult = new Result();
-                errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+                errorResult.setResult(Byte.valueOf((byte) Result.RESULT_OPERATION_FAILED)); // Failure code
                 errorResult.setErrorMessage("Invalid geometry JSON format: " + modelUri);
                 response.setResult(errorResult);
                 return;
@@ -133,7 +158,7 @@ public class SpawnEntityService  extends BaseComposableNode {
         } catch (IOException e) {
             LOGGER.error("Failed to read model URI: " + modelUri, e);
             Result errorResult = new Result();
-            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setResult(Byte.valueOf((byte) Result.RESULT_OPERATION_FAILED)); // Failure code
             errorResult.setErrorMessage("Failed to read model URI: " + modelUri);
             response.setResult(errorResult);
             return;
@@ -145,7 +170,7 @@ public class SpawnEntityService  extends BaseComposableNode {
             if (current_model_number >= DynamicModelEntityModel.MAX_MODEL_COUNT) {
                 LOGGER.error("Maximum model number reached, overwriting existing models.");
                 Result errorResult = new Result();
-                errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+                errorResult.setResult(Byte.valueOf((byte) Result.RESULT_OPERATION_FAILED)); // Failure code
                 errorResult.setErrorMessage("Maximum model number reached, overwriting existing models.");
                 response.setResult(errorResult);
                 return;
@@ -171,7 +196,7 @@ public class SpawnEntityService  extends BaseComposableNode {
         if (robot == null) {
             LOGGER.error("Failed to create entity of type: " + type);
             Result errorResult = new Result();
-            errorResult.setResult(Byte.valueOf((byte) 0)); // Failure code
+            errorResult.setResult(Byte.valueOf((byte) Result.RESULT_OPERATION_FAILED)); // Failure code
             errorResult.setErrorMessage("Failed to create entity of type: " + type);
             response.setResult(errorResult);
             return;
@@ -194,10 +219,11 @@ public class SpawnEntityService  extends BaseComposableNode {
         robot.setModelDimensions();
 
         Result result = new Result();
-        byte code = (byte) (robot != null ? 1 : 0);
-        result.setResult(Byte.valueOf(code)); // 成功
+        result.setResult(Byte.valueOf((byte) Result.RESULT_OK)); // 成功
         response.setResult(result);
+        response.setEntityName(modelName); // 応答にエンティティ名を設定
         System.out.println("request: " + x + ", " + y + ", " + z);
     }
 
 }
+
