@@ -151,6 +151,11 @@ if __name__ == '__main__':
 
 ```
 
+`setup.py`の`console_scripts` に以下を追加します
+```py
+'break_block = minecraft_ros2_tutorial.break_block:main',
+```
+
 ```bash
 colcon build
 source install/setup.bash
@@ -276,6 +281,14 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
 ```
+
+`package.xml` のdependに `minecraft_msgs`を追加しましょう
+
+```xml
+<depend>minecraft_msgs</depend>
+```
+
 
 これを実行すると自動で階段を生成してくれます！

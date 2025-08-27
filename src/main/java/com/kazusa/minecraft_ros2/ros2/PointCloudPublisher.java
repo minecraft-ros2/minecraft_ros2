@@ -60,7 +60,7 @@ public class PointCloudPublisher extends BaseComposableNode {
     private double minDistance      = 0.05;
     private double maxDistance      = 120.0;
 
-    private final boolean publishTF       = false;
+    private final boolean publishTF       = true;
 
 
     public PointCloudPublisher() {
