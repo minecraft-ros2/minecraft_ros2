@@ -1,37 +1,43 @@
-# topic
-topicはROS 2をやる上で欠かせない通信方法です。
+# Topic
 
-このページでは以下の内容を学びます。
-- message
-- publisher, subsctiber
-- `ros2 topic`コマンド
-- `ros2 interface`コマンド
+In ROS 2, topics are an essential communication method.
 
-## message
-トピックでやり取りされる情報をメッセージ(message)と呼びます。
+On this page, you will learn the following:
 
-メッセージの型は自由に定義することができます。
+* message
+* publisher, subscriber
+* `ros2 topic` command
+* `ros2 interface` command
 
-例えば`std_msgs`というパッケージに含まれる`msg/Bool`を使えばbool型のトピック通信を行うことができます。
+## Message
 
-minecraft_ros2では`minecraft_msgs`というパッケージで独自の型を定義しています。
+The information exchanged over topics is called a **message**.
 
-## publisher, subsctiber
-送信者をパブリッシャー(publisher)、受診者をサブスクライバー(subscriber)と呼びます。
+You can freely define the type of a message.
 
-つまり、パブリッシャーがあるトピックにメッセージを送信すると同じトピックを見ているサブスクライバーが受信し、何らかの動作が実行される　というわけです。
+For example, using `msg/Bool` from the `std_msgs` package allows you to communicate boolean values over a topic.
 
-## `ros2 topic`コマンド
-`ros2 topic`コマンドを使うとトピック通信に関する情報を確認したりすることができます。
+In **minecraft\_ros2**, custom message types are defined in the `minecraft_msgs` package.
 
-ここではよく使用するサブコマンドのlist, echo, info, pub を紹介します。
+## Publisher and Subscriber
+
+The sender is called a **publisher**, and the receiver is called a **subscriber**.
+
+In other words, when a publisher sends a message to a topic, any subscriber that listens to the same topic will receive it and perform some action.
+
+## `ros2 topic` Command
+
+The `ros2 topic` command allows you to inspect and interact with topics.
+
+Here, we introduce the frequently used subcommands: `list`, `echo`, `info`, and `pub`.
 
 ### list
-`ros2 topic list`と実行することで現在存在しているトピックの一覧を確認できます。
 
-また`-v`というオプションをつけることで詳細情報を確認できます。
+Running `ros2 topic list` shows a list of currently available topics.
 
-試しにminecraft_ros2を起動し、ワールドに参加すると以下の様な出力になるはずです。
+With the `-v` option, you can see more detailed information.
+
+For example, after launching **minecraft\_ros2** and joining the world, you should see output like this:
 
 ```bash
     $ ros2 topic list
@@ -47,12 +53,13 @@ minecraft_ros2では`minecraft_msgs`というパッケージで独自の型を�
 ```
 
 ### echo
-`ros2 topic echo トピック名`と実行するとtopicに流れてきているデータを確認できます。
 
-minecraft_ros2を起動した状態で `ros2 topic echo /player/status` を実行するとプレーヤーの状態を確認できるはずです。
+Running `ros2 topic echo <topic_name>` lets you monitor the data flowing through a topic.
+
+For instance, after launching **minecraft\_ros2**, try:
 
 ```bash
-    $ ros2 topic echo /player/status 
+    $ ros2 topic echo /player/status
 name: Dev
 dimension: minecraft:overworld
 food_level: 20
@@ -60,42 +67,45 @@ score: 0
 .....
 ```
 
+This shows the player's status.
 
 ### info
-`ros2 topic info トピック名`と実行するとそのトピックのパブリッシャーとサブスクライバーなどの情報がわかります。
+
+Running `ros2 topic info <topic_name>` provides information about the publishers and subscribers of that topic.
 
 ```bash
-    $ ros2 topic info /player/status 
+    $ ros2 topic info /player/status
 Type: minecraft_msgs/msg/PlayerStatus
 Publisher count: 1
 Subscription count: 0
 ```
 
 ### pub
-`ros2 topic pub トピック名 型 メッセージ`と実行するとそのトピックにメッセージをパブリッシュすることができます。
 
-例えば `/cmd_vel` に対して前に1m/s、左に0.3m/sの司令を送るときは、
+Running `ros2 topic pub <topic_name> <type> <message>` publishes a message to a topic.
+
+For example, to send a velocity command of 1 m/s forward and 0.3 m/s to the left on `/cmd_vel`:
 
 ```bash
 ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 1.0, y: 0.3}}"
 ```
-を実行します。
 
-geometry_msgs/msg/Twist は3次元の平行移動と回転に関するメッセージ型で、linear.xが前に平行移動、linear.yが左に平行移動という意味を持ちます。
+The message type `geometry_msgs/msg/Twist` represents translation and rotation in 3D. Here, `linear.x` corresponds to forward translation, and `linear.y` to leftward translation.
 
-コマンドを実行すると止まらなくなると思うので一度 Ctrl + C で停止し、空のメッセージを送信しましょう。
+Since this command continues publishing, you can stop it with **Ctrl + C**. Then, publish an empty message to stop the movement.
 
-メッセージを省略すると空のメッセージを送信することができます。
+If you omit the message argument, an empty message will be sent.
 
-## `ros2 interface`コマンド
-`ros2 interface`コマンドを使うとメッセージなどの情報を取得することができます。
-主に package, showを使います。
+## `ros2 interface` Command
+
+The `ros2 interface` command provides information about message definitions. Commonly used subcommands are `package` and `show`.
 
 ### package
-`ros2 interface package パッケージ名`を実行するとそのパッケージに含まれているメッセージを取得することができます。
+
+Running `ros2 interface package <package_name>` lists the messages available in that package.
 
 ```bash
-    $ ros2 interface package minecraft_msgs 
+    $ ros2 interface package minecraft_msgs
 minecraft_msgs/srv/Command
 minecraft_msgs/msg/BlockArray
 minecraft_msgs/msg/LivingEntity
@@ -107,10 +117,11 @@ minecraft_msgs/msg/MobCategory
 ```
 
 ### show
-`ros2 interface show メッセージ型`を実行するとその型の中身を調べることができます。
+
+Running `ros2 interface show <message_type>` displays the structure of that message.
 
 ```bash
-    $ ros2 interface show minecraft_msgs/msg/Item 
+    $ ros2 interface show minecraft_msgs/msg/Item
 string name
 uint8 count
 int16 damage

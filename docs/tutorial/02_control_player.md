@@ -1,54 +1,60 @@
-# control player
-Pythonを使いプレーヤーを遠隔操縦してみましょう
+# Control Player
 
-このページでは以下の内容を学びます。
-- パッケージ、ノード作成
-- Pythonパブリッシャー、サブスクライバー作成
+Let's control the player remotely using Python.
 
-## 1. パッケージを作成する
-適当な作業場所に移動します。
+On this page, you will learn the following:
+
+* Creating a package and a node
+* Writing a Python publisher
+
+## 1. Create a Package
+
+Move to a suitable workspace:
 
 ```bash
 mkdir -p ~/minecraft_ros2_tutorial_ws/src
 cd ~/minecraft_ros2_tutorial_ws/src
 ```
 
-以下コマンドを実行し、Pythonノードを含むパッケージのテンプレートを作成します。
+Run the following command to create a package template with a Python node:
 
 ```bash
 ros2 pkg create --build-type ament_python minecraft_ros2_tutorial
 ```
 
-テンプレートをもとに変更が必要な点を直します。
+Modify the template as needed.
 
 ### package.xml
-package.xmlにはパッケージの情報を記入します。
 
-今回は依存関係で geometry_msgs が必要なのでそれを追記します
+Add package information to **package.xml**.
 
-`<test_depend>` と `<export>` の間に以下を書き足してください。
+Since this tutorial depends on `geometry_msgs`, add it as a dependency.
+
+Insert the following line between `<test_depend>` and `<export>`:
 
 ```xml
 <depend>geometry_msgs</depend>
 ```
 
-また、descriptionやmaintainer、licenseタグも編集が必要なので編集します。
+Also, update the `description`, `maintainer`, and `license` tags.
 
 ### setup.py
-setup.py はPythonに関する設定を記入します。
 
-今回はノードの登録が必要なので最後の方にある `console_scripts` を編集します
+The **setup.py** file contains Python-related configuration.
+
+Register the node by editing the `console_scripts` section near the end:
 
 ```py
 entry_points={
         'console_scripts': [
-                'player_controller = minecraft_ros2_tutorial.player_controller:main',
+                'control_player = minecraft_ros2_tutorial.control_player:main',
         ],
 },
 ```
 
-## 2. Pythonコードを書く
-`minecraft_ros2_tutorial/player_controller.py` を作成し、以下のコードを記入します。
+## 2. Write the Python Code
+
+Create `minecraft_ros2_tutorial/control_player.py` and add the following code:
 
 ```py
 import rclpy
@@ -57,20 +63,20 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 
 
-class PlayerController(Node):
+class ControlPlayer(Node):
     def __init__(self):
-        super().__init__('player_controller')
-        self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
+        super().__init__('control_player') # Create a Node named control_player
+        self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10) # Publisher for /cmd_vel
         timer_period = 0.01
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.i = 0
+        self.timer = self.create_timer(timer_period, self.timer_callback) # Call timer_callback every 0.01s
         self.speed = 1.0
-        print("Player Controller Node Initialized. Use wasd keys to move, Space to jump, WASD for rotation.")
+        print("Control Player Node Initialized. Use wasd keys to move, Space to jump, WASD for rotation.")
 
     def timer_callback(self):
         key = input("enter key (wasd,space,WASD) >>>")
-        twist = Twist()
+        twist = Twist() # Create message
 
+        # Assign values based on input
         if 'w' in key:
             twist.linear.x += self.speed
         if 's' in key:
@@ -90,17 +96,18 @@ class PlayerController(Node):
         if 'D' in key:
             twist.angular.z -= self.speed
 
-        self.publisher_.publish(twist)
+        self.publisher_.publish(twist) # Publish message
 
 
 def main(args=None):
-    rclpy.init(args=args)
+    rclpy.init(args=args) # Initialize ROS 2
 
-    player_controller = PlayerController()
+    control_player = ControlPlayer()
 
-    rclpy.spin(player_controller)
+    rclpy.spin(control_player) # Start infinite loop
 
-    player_controller.destroy_node()
+    # Cleanup on shutdown
+    control_player.destroy_node()
     rclpy.shutdown()
 
 
@@ -108,16 +115,27 @@ if __name__ == '__main__':
     main()
 ```
 
-このコードでは wasd で平行移動、 スペースキーでジャンプ、 WASD で視点移動ができるようなメッセージを送信します。
+This code allows you to send movement commands: `wasd` for translation, **Space** for jumping, and **WASD** for rotation.
 
-試しに実行してみましょう！ (minecraft_ros2を起動して適当なワールドに参加しておいてください)
+Now, let’s try running it! (Make sure **minecraft\_ros2** is launched and you have joined a world.)
 
-`cd ~/ros2_tutorial_ws` で作業場所に移動し、 `colcon build` でビルドしてみましょう！
-
-初回のみ `source install/setup.bash` の実行が必要です。
+Move to the workspace and build:
 
 ```bash
-ros2 run minecraft_ros2_tutorial player_controller
+cd ~/ros2_tutorial_ws
+colcon build
 ```
 
-これでマイクラ内のプレーヤーの移動がROS 2から遠隔でできるようになりました！
+For the first run, source the setup file:
+
+```bash
+source install/setup.bash
+```
+
+Then, run the node:
+
+```bash
+ros2 run minecraft_ros2_tutorial control_player
+```
+
+Now, you can remotely control the Minecraft player through ROS 2!

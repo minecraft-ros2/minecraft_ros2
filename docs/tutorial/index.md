@@ -1,27 +1,38 @@
-# ROS 2チュートリアル
-このチュートリアルでは、`minecraft_ros2`でminecraftを自動で操作することでROS 2の実践的な技術の習得ができます。
+# ROS 2 Tutorial
 
-このチュートリアルは ROS 2 Documentation の`Intermediate`の`Writing an action server and client (Python)`まで理解した人向けのものとなっています。
+In this tutorial, you will learn practical ROS 2 skills by automatically controlling Minecraft using `minecraft_ros2`.
+
+This tutorial is intended for readers who have completed up to **`Intermediate` → `Writing an action server and client (Python)`** in the ROS 2 Documentation.
 
 ---
 
-## 目次
-0. **[topicとは](/jp/tutorial/00_topic)**
-    - トピック説明
-    - コマンド説明
+## Table of Contents
+
+0. **[What is a topic](/jp/tutorial/00_topic)**
+
+   * Explanation of topics
+   * Explanation of commands
 
 1. **[RViz2](/jp/tutorial/01_rviz2)**
-    - カメラ画像の可視化
-    - LiDARの点群データの可視化
 
-2. **[Player操作](/jp/tutorial/02_control_player)**
-    - pythonパッケージ作成
-    - トピックの送信
+   * Visualizing camera images
+   * Visualizing LiDAR point cloud data
 
-3. **[周囲のブロックを破壊](/jp/tutorial/03_break_block)**
-    - 周囲のブロックを取得
-    - 破壊対象のブロックを破壊
+2. **[Player Control](/jp/tutorial/02_control_player)**
 
-4. **[周囲のモブを攻撃](/jp/tutorial/04_attack_mod)**
-    - 周囲のモブを取得
-    - 攻撃対象のモブを攻撃
+   * Creating a Python package
+   * Sending topics
+
+3. **[Destroy Surrounding Blocks](/jp/tutorial/03_break_block)**
+
+   * Obtaining surrounding blocks
+   * Destroying target blocks
+
+4. **[Autonomous Navigation](/jp/tutorial/04_navigation)**
+
+   * Autonomous driving to a goal
+
+5. **[Localization](/jp/tutorial/05_localization)**
+
+   * Self-position estimation
+   * Mapping

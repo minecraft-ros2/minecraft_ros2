@@ -1,41 +1,45 @@
 # RViz2
-Rvizとは、ROS（Robot Operating System）に付属する3Dビジュアライザーです。
 
-Rvizを使うことで、プレーヤー情報やLiDAR、カメラなどのデータを3D空間上で表示することができます。
+Rviz is a 3D visualizer that comes with ROS (Robot Operating System).
 
-## 起動
+Using Rviz, you can display data such as player information, LiDAR, and camera streams in a 3D environment.
+
+## Launch
+
 ```bash
 rviz2
 ```
-たったこれだけです(sourceは実行済みの前提です)
-![デフォルト画面](/images/tutorial/rviz2_default.png)
 
-## 設定
-ここではImageとLiDARの可視化を行いたいと思います
-(minecraft_ros2を起動しておいてください)
+That’s all you need (assuming you have already sourced your environment).
+
+![Default Screen](/images/tutorial/rviz2_default.png)
+
+## Configuration
+
+Here, we will visualize **Image** and **LiDAR** data. (Make sure **minecraft\_ros2** is running.)
 
 ### Image
-Imageは画像で、マイクラのプレイ画面が送信されています。
 
-画面左下AddからBy topicでImageを選択しましょう
-![選択画面](/images/tutorial/rviz2_add_image.png)
+Image topics carry image data—in this case, the Minecraft gameplay screen.
 
-そうするとマインクラフトの画面が左下に表示されます！
+From the bottom-left **Add** button, choose **By topic → Image**.
 
-![表示された](/images/tutorial/rviz2_image.png)
+![Selection Screen](/images/tutorial/rviz2_add_image.png)
+
+Then, the Minecraft screen will appear in the bottom-left view!
+
+![Displayed](/images/tutorial/rviz2_image.png)
 
 ### LiDAR
-[LiDARセンサーを装備](/jp/documentation/doc_sensors)することで周囲のブロックやエンティティの距離がわかるようになります。
 
-Imageと同様にBy topicで Point Cloud 2を選択しましょう
+By [equipping a LiDAR sensor](/jp/documentation/doc_sensors), you can obtain distance measurements to surrounding blocks and entities.
 
-表示されるかと思いきや何も変化がありません。
+Just like with Image, select **By topic → PointCloud2**.
 
-なぜなら表示する座標系を間違えているからです。
+At first, nothing may appear. This is because the coordinate frame is incorrect.
 
-Global OptionsのFixed Frameを`player`に変更することで表示されるようになります。
+Change the **Global Options → Fixed Frame** to `player`, and the LiDAR data will be displayed.
 
-![変更後](/images/tutorial/rviz2_fixed_frame.png)
+![After Change](/images/tutorial/rviz2_fixed_frame.png)
 
-もし見づらかったらPoint Cloud 2 の Size (m) を変更することで見やすくすることができます。
-
+If the points are hard to see, you can adjust **PointCloud2 → Size (m)** to make the visualization clearer.
