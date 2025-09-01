@@ -32,7 +32,7 @@ LiDAR-SLAM なら、LiDAR が見た周囲の形（壁や障害物）から\*\*�
 5. ロボットが仮想世界を動き回ると、**/map（地図）**と**自己位置**が更新されます
 
 
-## 前提（Prerequisites）
+## 前提
 
 * **ROS 2 Humble**（Ubuntu 22.04 を想定）
 * `git`, `vcstool`, `colcon`, `rosdep` などのビルド/取得ツール
@@ -41,9 +41,9 @@ LiDAR-SLAM なら、LiDAR が見た周囲の形（壁や障害物）から\*\*�
 * Minecraft 用クライアントはスクリプトから起動します（`runClient.sh`）
 
 
-## セットアップ手順（Step by Step）
+## セットアップ手順
 
-### 0) 開発ツールのインストール（未導入なら）
+### 0. 開発ツールのインストール（未導入なら）
 
 ```bash
 sudo apt update
@@ -53,7 +53,7 @@ sudo rosdep init || true
 rosdep update
 ```
 
-### 1) ROS 2 環境を読み込む
+### 1. ROS 2 環境を読み込む
 
 ```bash
 source /opt/ros/humble/setup.bash
@@ -61,39 +61,18 @@ source /opt/ros/humble/setup.bash
 
 （これで `ROS_DISTRO=humble` が有効になります）
 
-### 2) ワークスペース作成＆サンプル取得
+### 2. ワークスペース作成＆サンプル取得
 
-以下のように **`~/minecraft_ros2` をワークスペースのルート**にします。
-
-```bash
-mkdir -p ~/minecraft_ros2/src
-cd ~/minecraft_ros2
-# サンプルの例リポジトリを取得
-git clone https://github.com/minecraft-ros2/minecraft_ros2_example.git
-# .repos で依存パッケージ群を src/ に一括取得
-vcs import src < minecraft_ros2_example/example.repos
-```
-
-### 3) 依存関係の解決
-
-```bash
-rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
-```
-
-### 4) ビルド
-
-```bash
-colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-```
+[サンプルコードのセットアップ](/jp/documentation/setup_sample) を参考にサンプルコードの準備をしてください
 
 
-## 実行手順（Run）
+## 実行手順
 
 ### Terminal 1：SLAM の起動
 
 ```bash
-cd ~/minecraft_ros2
-source ./install/setup.bash
+source ~/ros2_java_ws/install/setup.bash
+source ~/minecraft_ros2_example_ws/install/setup.bash
 ros2 launch minecraft_ros2_example lidarslam_ros2.launch.xml
 ```
 

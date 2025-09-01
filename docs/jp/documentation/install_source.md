@@ -34,8 +34,8 @@
 1. **ROS 2 Java リポジトリをワークスペースにダウンロードする**
 
     ```bash
-    mkdir -p ros2_java_ws/src
-    cd ros2_java_ws
+    mkdir -p ~/ros2_java_ws/src
+    cd ~/ros2_java_ws
     curl -skL https://raw.githubusercontent.com/minecraft-ros2/ros2_java/main/ros2_java_desktop.repos | vcs import src
     ```
 

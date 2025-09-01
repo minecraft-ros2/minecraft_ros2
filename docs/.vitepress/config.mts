@@ -66,6 +66,7 @@ export default defineConfig({
                     { text: 'はじめに', link: './what_is' },
                     { text: 'Dockerセットアップ', link: './install_docker' },
                     { text: 'ソースインストール', link: './install_source' },
+                    { text: `サンプルコードのセットアップ`, link: './setup_sample' }
                   ]
                 },
                 {
