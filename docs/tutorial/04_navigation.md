@@ -68,7 +68,7 @@ source /opt/ros/humble/setup.bash
 
 ### 2. Create Workspace & Get Samples
 
-Follow the [Sample Setup Guide](/en/documentation/setup_sample) to prepare the sample code.
+Follow the [Sample Setup Guide](/documentation/setup_sample) to prepare the sample code.
 
 ## Run Instructions
 

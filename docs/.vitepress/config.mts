@@ -22,6 +22,7 @@ export default defineConfig({
                     { text: 'What is Minecraft ROS 2 ?', link: '/documentation/what_is' },
                     { text: 'Setup with Docker', link: '/documentation/install_docker' },
                     { text: 'Source Install', link: '/documentation/install_source' },
+                    { text: 'Setup Sample', link: '/documentation/setup_sample'}
                   ]
                 },
                 {
@@ -42,6 +43,9 @@ export default defineConfig({
                     { text: 'topic', link: '/tutorial/00_topic'},
                     { text: 'rviz2', link: '/tutorial/01_rviz2'},
                     { text: 'Control Player', link: '/tutorial/02_control_player'},
+                    { text: 'Break Block', link: '/tutorial/03_break_block'},
+                    { text: 'Navigation', link: '/tutorial/04_navigation'},
+                    { text: `Localization`, link: '/tutorial/05_localization'}
                   ]
                 }
             ]

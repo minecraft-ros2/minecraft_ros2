@@ -67,7 +67,7 @@ source /opt/ros/humble/setup.bash
 
 ### 2. Fetch the Sample Workspace
 
-Follow the [sample setup guide](/jp/documentation/setup_sample) to fetch and build the example.
+Follow the [sample setup guide](/documentation/setup_sample) to fetch and build the example.
 
 ---
 
