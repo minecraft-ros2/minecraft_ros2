@@ -77,7 +77,7 @@ public class TwistSubscriber extends BaseComposableNode {
             // Rotation processing (smooth)
             if (Math.abs(lastAngularZ) > 0.1 || Math.abs(lastAngularY) > 0.1) {
                 float rotZ = (float)(-lastAngularZ * speedFactor * 10);
-                float rotY = (float)(lastAngularY * speedFactor * 10);
+                float rotY = (float)(-lastAngularY * speedFactor * 10);
                 player.setYRot(player.getYRot() + rotZ);
                 player.setXRot(player.getXRot() + rotY);
             }
